@@ -9,6 +9,6 @@ rm -f passwords.sh
 tokens=($password_keys)
 for token in "${tokens[@]}"
 do
-	pwd=`makepasswd --chars 16`
+	pwd=`pwgen 16 1`
 	echo "export $token=$pwd" >> passwords.sh
 done;
