@@ -21,7 +21,7 @@ cat << EOF > /etc/systemd/system/docker.service.d/override.conf
 EnvironmentFile=
 EnvironmentFile=-/etc/default/docker
 ExecStart=
-ExecStart=/usr/bin/docker -d $DOCKER_OPTS -H fd://
+ExecStart=/usr/bin/docker -d \$DOCKER_OPTS -H fd://
 EOF
 
 cat << EOF > /etc/default/docker
@@ -41,4 +41,5 @@ DOCKER_OPTS="--dns 172.17.0.1"
 EOF
 
 echo "Restarting docker"
+systemctl daemon-reload
 systemctl restart docker
