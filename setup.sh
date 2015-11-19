@@ -12,6 +12,10 @@ fi
 
 source config.sh
 
+echo "Fixing locale issue..."
+base/fix-locale.sh
+source /etc/default/locale
+
 echo "Base install..."
 base/base-install.sh
 
@@ -35,3 +39,10 @@ docker-services/add-systemd-startup.sh
 echo "Adding users..."
 base/users-install.sh
 
+#
+# Problems with apt-get update then run:
+#
+# apt-get clean
+# rm -rf /var/cache/apt/*
+# rm -rf /var/lib/apt/lists/*
+# apt-get update

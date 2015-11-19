@@ -13,15 +13,15 @@ fi
 echo "Configuring sensorsd..."
 sensors-detect
 
-echo "Locale fix"
-cat << EOF > /etc/default/locale
-LANG="en_GB"
-LANGUAGE="en_GB.UTF-8"
-LC_ALL="en_GB.UTF-8"
-EOF
+#echo "Locale fix"
+#cat << EOF > /etc/default/locale
+#LANG="en_GB"
+#LANGUAGE="en_GB.UTF-8"
+#LC_ALL="en_GB.UTF-8"
+#EOF
 
-locale-gen en_GB
-dpkg-reconfigure locales
+#locale-gen en_GB
+#dpkg-reconfigure locales
 
 echo "Configuring smartmontools"
 cat << EOF >> /etc/smartd.conf
@@ -149,3 +149,19 @@ restrict ::1
 #disable auth
 #broadcastclient
 EOF
+
+echo "Hardening SSH"
+if ( grep 'UseDNS' /etc/ssh/sshd_config ); then
+    echo "UseDNS already defined!"
+else
+    echo "Removing DNS check on ssh login"
+    echo "UseDNS no" | tee -a /etc/ssh/sshd_config
+fi
+
+if ( grep 'PermitRootLogin no' /etc/ssh/sshd_config ); then
+    echo "PermitRootLogin already set to no"
+else
+    mv /etc/ssh/sshd_config /etc/ssh/sshd_config.org > /dev/null
+    cat /etc/ssh/sshd_config.org | sed 's/PermitRootLogin .*/PermitRootLogin no/' > /etc/ssh/sshd_config
+fi
+systemctl restart ssh
