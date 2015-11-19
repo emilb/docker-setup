@@ -12,13 +12,13 @@ fi
 
 source config.sh
 
+echo "Base install..."
+base/base-install.sh
+
 echo "Generating passwords..."
 ./generate-passwords.sh
 
 source passwords.sh
-
-echo "Base install..."
-base/base-install.sh
 
 echo "Post install..."
 base/post-install.sh
