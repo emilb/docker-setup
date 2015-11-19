@@ -4,8 +4,6 @@
 # Generates a file with all passwords
 ###
 
-source ./config.sh
-
 rm -f passwords.sh
 
 tokens=($password_keys)

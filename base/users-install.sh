@@ -1,4 +1,3 @@
-source ../passwords.sh
 
 tokens=($users)
 for user in "${tokens[@]}"
