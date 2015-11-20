@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash
 
 ###
 # Create users and group memberships
