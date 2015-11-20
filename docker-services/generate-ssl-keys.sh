@@ -46,7 +46,7 @@ commonName_max = 64
 
 
 #-------------------Edit this section------------------------------
-countryName_default     = SE
+countryName_default     = US
 stateOrProvinceName_default = N/A
 localityName_default        = San Francisco
 0.organizationName_default  = Northpath Industries
@@ -67,5 +67,6 @@ EOF
 	mv $hostname.crt "$docker_base_path/nginx-proxy/certs/"
 	mv $hostname.key "$docker_base_path/nginx-proxy/certs/"
 
+	rm $hostname.csr
 	rm openssl.cnf
 done

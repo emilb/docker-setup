@@ -88,7 +88,7 @@ Restart=always
 ExecStartPre=-/usr/bin/docker kill nginx-proxy
 ExecStartPre=-/usr/bin/docker rm nginx-proxy
 
-ExecStart=/usr/bin/docker run $log_config -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro --name nginx-proxy jwilder/nginx-proxy
+ExecStart=/usr/bin/docker run $log_config -p 443:433 -v $docker_base_path/nginx-proxy/certs:/etc/nginx/certs -v /var/run/docker.sock:/tmp/docker.sock:ro --name nginx-proxy jwilder/nginx-proxy
 
 ExecStop=/usr/bin/docker stop nginx-proxy
 

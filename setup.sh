@@ -33,11 +33,14 @@ base/users-install.sh
 echo "Installing Docker..."
 docker-services/docker.sh
 
-echo "Pulling docker containers"
+echo "Pulling docker containers..."
 docker-services/pull-services.sh
 
-echo "Adding systemd for docker containers"
+echo "Adding systemd for docker containers..."
 docker-services/add-systemd-startup.sh
+
+echo "Generating SSL keys..."
+docker-services/generate-ssl-keys.sh
 
 #
 # Problems with apt-get update then run:
