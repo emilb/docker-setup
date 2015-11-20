@@ -18,6 +18,7 @@ ufw default allow outgoing
 
 ufw allow from any to any app OpenSSH
 ufw allow http
+ufw allow https
 
 tokens=($allowed_samba_nets)
 for net in "${tokens[@]}"

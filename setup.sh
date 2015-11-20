@@ -27,11 +27,11 @@ source passwords.sh
 echo "Post install..."
 base/post-install.sh
 
-echo "Adding users..."
-base/users-install.sh
-
 echo "Installing Docker..."
 docker-services/docker.sh
+
+echo "Adding users..."
+base/users-install.sh
 
 echo "Pulling docker containers..."
 docker-services/pull-services.sh
