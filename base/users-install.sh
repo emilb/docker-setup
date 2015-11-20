@@ -9,6 +9,7 @@ if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
    exit 1
 fi
+
 # Create common group
 groupadd fileshare
 
@@ -25,6 +26,10 @@ do
 	usermod -aG docker $user
 	usermod -aG fileshare $user
 done
+
+# Reset root password
+pwd=`printenv root_user`
+echo root:$pwd | chpasswd
 
 mkdir -p $docker_base_path/downloads
 chown -R :fileshare $docker_base_path/downloads
