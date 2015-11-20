@@ -160,8 +160,8 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable skydnd-docker.service
 systemctl enable graylog-docker.service
+systemctl enable skydns-docker.service
 systemctl enable skydock-docker.service
 systemctl enable nginx-proxy-docker.service
 systemctl enable influxdb-docker.service

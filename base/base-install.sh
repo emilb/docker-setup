@@ -40,6 +40,10 @@ apt-get -qq -y install git-core > /dev/null
 echo "Installing samba nfs-kernel-server..."
 apt-get -qq -y install samba nfs-kernel-server > /dev/null
 
+# Fail2ban
+echo "Installing fail2ban..."
+apt-get -qq -y install fail2ban > /dev/null
+
 # ntp
 echo "Installing ntp ntpdate..."
 apt-get -qq -y install ntp ntpdate > /dev/null

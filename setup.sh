@@ -27,6 +27,9 @@ source passwords.sh
 echo "Post install..."
 base/post-install.sh
 
+echo "Adding users..."
+base/users-install.sh
+
 echo "Installing Docker..."
 docker-services/docker.sh
 
@@ -35,9 +38,6 @@ docker-services/pull-services.sh
 
 echo "Adding systemd for docker containers"
 docker-services/add-systemd-startup.sh
-
-echo "Adding users..."
-base/users-install.sh
 
 #
 # Problems with apt-get update then run:
