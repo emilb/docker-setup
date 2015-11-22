@@ -23,6 +23,8 @@ apt-get -qq -y dist-upgrade > /dev/null
 echo "Installing makepasswd pwgen screen htop unzip unrar glances emacs wget curl man mc..."
 apt-get -qq -y install makepasswd pwgen screen tmux htop unzip unrar glances emacs wget curl man mc > /dev/null
 
+apt-get -qq -y install update-motd
+
 # Version control
 echo "Installing collectd sensord smartmontools..."
 apt-get -qq -y install collectd sensord smartmontools > /dev/null

@@ -10,6 +10,46 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+echo "Configuring Message of the Day..."
+rm /etc/update-motd.d/10-help-text
+cat << EOF > /etc/update-motd.d/10-banner-text
+#!/bin/sh
+printf "\n"
+printf "@@@  @@@  @@@@@@  @@@@@@@  @@@@@@@ @@@  @@@ @@@@@@@   @@@@@@  @@@@@@@ @@@  @@@\n"
+printf "@@!@!@@@ @@!  @@@ @@!  @@@   @@!   @@!  @@@ @@!  @@@ @@!  @@@   @@!   @@!  @@@\n"
+printf "@!@@!!@! @!@  !@! @!@!!@!    @!!   @!@!@!@! @!@@!@!  @!@!@!@!   @!!   @!@!@!@!\n"
+printf "!!:  !!! !!:  !!! !!: :!!    !!:   !!:  !!! !!:      !!:  !!!   !!:   !!:  !!!\n"
+printf "::    :   : :. :   :   : :    :     :   : :  :        :   : :    :     :   : :\n"
+printf "\n"
+printf "    @@@@@@ @@@@@@@@\n"
+printf "   !@@     @@!     \n"
+printf "    !@@!!  @!!!:!  \n"
+printf "       !:! !!:     \n"
+printf ":: ::.: :  : :: :::\n"
+printf "\n"
+EOF
+chmod +x /etc/update-motd.d/10-banner-text
+
+cat << EOF > /etc/update-motd.d/30-docker-status
+#!/bin/sh
+/usr/bin/docker ps --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Size}}\t{{.Labels}}"
+EOF
+chmod +x /etc/update-motd.d/30-docker-status
+
+cat << EOF > /etc/update-motd.d/40-system-stats
+#!/bin/sh
+echo
+date
+echo
+who
+echo
+uptime
+echo
+df -h
+echo
+EOF
+chmod +x /etc/update-motd.d/40-system-stats
+
 echo "Configuring sensorsd..."
 sensors-detect
 
