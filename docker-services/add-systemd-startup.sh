@@ -159,6 +159,8 @@ ExecStop=/usr/bin/docker stop mysql
 WantedBy=multi-user.target
 EOF
 
+
+
 systemctl daemon-reload
 systemctl enable graylog-docker.service
 systemctl enable skydns-docker.service

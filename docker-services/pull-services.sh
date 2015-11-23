@@ -8,3 +8,12 @@ docker pull grafana/grafana
 docker pull linuxserver/nzbget
 docker pull mysql
 
+# newznab
+# vpn
+
+# Dependent on fileshare mounted
+# plex
+# sonarr
+# nzbget
+
+

@@ -39,8 +39,9 @@ echo "Installing git-core..."
 apt-get -qq -y install git-core > /dev/null
 
 # Filesharing
-echo "Installing samba nfs-kernel-server..."
-apt-get -qq -y install samba nfs-kernel-server > /dev/null
+echo "Installing samba open-iscsi nfs-kernel-server..."
+apt-get -qq -y install samba open-iscsi nfs-kernel-server > /dev/null
+# https://www.howtoforge.com/using-iscsi-on-ubuntu-10.04-initiator-and-target
 
 # Fail2ban
 echo "Installing fail2ban..."

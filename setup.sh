@@ -34,13 +34,27 @@ echo "Adding users..."
 base/users-install.sh
 
 echo "Pulling docker containers..."
-docker-services/pull-services.sh
+#docker-services/pull-services.sh
+
+echo "Creating newznab docker"
+docker-services/newznab.sh
 
 echo "Adding systemd for docker containers..."
 docker-services/add-systemd-startup.sh
 
 echo "Generating SSL keys..."
 docker-services/generate-ssl-keys.sh
+
+echo "All is done, rember to keep generated passwords safe!"
+cat passwords.sh
+
+echo "Some services are dependent on the existence of /mnt/iscsi"
+echo "newznab"
+echo "nzbget"
+echo "sonarr"
+echo "plex"
+echo ""
+echo "Check: https://www.howtoforge.com/using-iscsi-on-ubuntu-10.04-initiator-and-target"
 
 #
 # Problems with apt-get update then run:
