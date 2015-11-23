@@ -15,6 +15,7 @@ sed -i "s/define('NNTP_USERNAME'.*/define('NNTP_USERNAME', '$nntp_username');/g"
 sed -i "s/define('NNTP_PASSWORD'.*/define('NNTP_PASSWORD', '$nntp_password');/g" $docker_base_path/src/docker-newznab/config.php
 sed -i "s/define('NNTP_SERVER'.*/define('NNTP_SERVER', '$nntp_server');/g" $docker_base_path/src/docker-newznab/config.php
 sed -i "s/define('NNTP_PORT'.*/define('NNTP_PORT', '$nntp_port');/g" $docker_base_path/src/docker-newznab/config.php
+sed -i "s/define('NNTP_SSLENABLED'.*/define('NNTP_SSLENABLED', '$nntp_ssl');/g" $docker_base_path/src/docker-newznab/config.php
 
 currdir=`pwd`
 

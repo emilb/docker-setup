@@ -31,4 +31,8 @@ echo "Enter the nntp port, followed by [ENTER]:"
 read nport
 export nntp_port=$nport
 
+echo "Enter SSL enabled (true/false), followed by [ENTER]:"
+read nssl
+export nntp_ssl=$nssl
+
 
