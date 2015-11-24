@@ -12,10 +12,6 @@ fi
 
 source config.sh
 
-echo "Fixing locale issue..."
-base/fix-locale.sh
-source /etc/default/locale
-
 echo "Base install..."
 base/base-install.sh
 
@@ -34,7 +30,7 @@ echo "Adding users..."
 base/users-install.sh
 
 echo "Pulling docker containers..."
-#docker-services/pull-services.sh
+docker-services/pull-services.sh
 
 echo "Creating newznab docker"
 docker-services/newznab.sh

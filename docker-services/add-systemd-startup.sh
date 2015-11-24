@@ -10,7 +10,8 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-log_config="--log-driver=gelf --log-opt gelf-address=udp://localhost:12201"
+#log_config="--log-driver=gelf --log-opt gelf-address=udp://localhost:12201"
+log_config=""
 
 #**** graylog-docker.service ****
 cat << EOF > /etc/systemd/system/graylog-docker.service

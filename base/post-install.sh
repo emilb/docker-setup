@@ -32,7 +32,7 @@ chmod +x /etc/update-motd.d/10-banner-text
 
 cat << EOF > /etc/update-motd.d/30-docker-status
 #!/bin/sh
-/usr/bin/docker ps --format "table {{.ID}}\t{{.Names}\t{{.Image}}\t{{.Status}}\t{{.Size}}}"
+/usr/bin/docker ps --format "table {{.ID}}\t{{.Names}\t{{.Image}}\t{{.Status}}\t{{.Size}}"
 EOF
 chmod +x /etc/update-motd.d/30-docker-status
 
@@ -40,8 +40,6 @@ cat << EOF > /etc/update-motd.d/40-system-stats
 #!/bin/sh
 echo
 date
-echo
-who
 echo
 uptime
 echo

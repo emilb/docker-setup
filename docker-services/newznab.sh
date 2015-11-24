@@ -8,7 +8,7 @@ sed -i "s/ENV nn_user .*/ENV nn_user $nnuser/" $docker_base_path/src/docker-newz
 sed -i "s/ENV nn_pass .*/ENV nn_pass $nnpassword/" $docker_base_path/src/docker-newznab/Dockerfile
 
 sed -i "s/define('DB_HOST'.*/define('DB_HOST', 'mysql.prod.docker');/g" $docker_base_path/src/docker-newznab/config.php
-sed -i "s/define('DB_USER'*./define('DB_USER', 'newznab');/g" $docker_base_path/src/docker-newznab/config.php
+sed -i "s/define('DB_USER'.*/define('DB_USER', 'newznab');/g" $docker_base_path/src/docker-newznab/config.php
 sed -i "s/define('DB_PASSWORD'.*/define('DB_PASSWORD','$mysql_newznab');/g" $docker_base_path/src/docker-newznab/config.php
 
 sed -i "s/define('NNTP_USERNAME'.*/define('NNTP_USERNAME', '$nntp_username');/g" $docker_base_path/src/docker-newznab/config.php
@@ -20,6 +20,6 @@ sed -i "s/define('NNTP_SSLENABLED'.*/define('NNTP_SSLENABLED', '$nntp_ssl');/g" 
 currdir=`pwd`
 
 cd $docker_base_path/src/docker-newznab
-docker build -t "newznab"
+docker build -t "newznab" .
 
 cd $currdir
