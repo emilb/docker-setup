@@ -1,12 +1,14 @@
 
 srcdir=$docker_base_path/src/docker-newznab
+rm -rf $srcdir
 mkdir -p $srcdir
+
 
 git clone https://github.com/cmeindl/Docker-NewzNab_Plus.git $srcdir
 
 sed -i "s/ENV nn_user .*/ENV nn_user $nnuser/" $srcdir/Dockerfile
 sed -i "s/ENV nn_pass .*/ENV nn_pass $nnpassword/" $srcdir/Dockerfile
-sed -i "s,chmod 777 /var/www/newznab/www/covers/movies.*,chmod 777 /var/www/newznab/www/covers/movies \&\& \\\ \nchmod 777 /var/www/newznab/www/covers/tv \&\& \\\," Dockerfile
+sed -i "s,chmod 777 /var/www/newznab/www/covers/movies.*,chmod 777 /var/www/newznab/www/covers/movies \&\& \\\ \nchmod 777 /var/www/newznab/www/covers/tv \&\& \\\," $srcdir/Dockerfile
 
 
 sed -i "s/define('DB_HOST'.*/define('DB_HOST', 'mysql.prod.docker');/g" $srcdir/config.php

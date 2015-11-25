@@ -32,11 +32,11 @@ base/users-install.sh
 echo "Pulling docker containers..."
 docker-services/pull-services.sh
 
-echo "Creating newznab docker"
-docker-services/newznab.sh
-
 echo "Adding systemd for docker containers..."
 docker-services/add-systemd-startup.sh
+
+echo "Creating newznab docker"
+docker-services/newznab.sh
 
 echo "Generating SSL keys..."
 docker-services/generate-ssl-keys.sh
