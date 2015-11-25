@@ -1,11 +1,13 @@
 
-srcdir=$srcdir
+srcdir=$docker_base_path/src/docker-newznab
 mkdir -p $srcdir
 
 git clone https://github.com/cmeindl/Docker-NewzNab_Plus.git $srcdir
 
 sed -i "s/ENV nn_user .*/ENV nn_user $nnuser/" $srcdir/Dockerfile
 sed -i "s/ENV nn_pass .*/ENV nn_pass $nnpassword/" $srcdir/Dockerfile
+sed -i "s,chmod 777 /var/www/newznab/www/covers/movies.*,chmod 777 /var/www/newznab/www/covers/movies \&\& \\\ \nchmod 777 /var/www/newznab/www/covers/tv \&\& \\\," Dockerfile
+
 
 sed -i "s/define('DB_HOST'.*/define('DB_HOST', 'mysql.prod.docker');/g" $srcdir/config.php
 sed -i "s/define('DB_USER'.*/define('DB_USER', 'newznab');/g" $srcdir/config.php
@@ -18,6 +20,10 @@ sed -i "s/define('NNTP_PORT'.*/define('NNTP_PORT', '$nntp_port');/g" $srcdir/con
 sed -i "s/define('NNTP_SSLENABLED'.*/define('NNTP_SSLENABLED', '$nntp_ssl');/g" $srcdir/config.php
 
 currdir=`pwd`
+
+# Start DNS
+systemctl start skydns-docker
+sleep 10
 
 cd $srcdir
 docker build -t "newznab" .

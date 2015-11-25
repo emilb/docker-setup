@@ -173,7 +173,7 @@ Restart=always
 ExecStartPre=-/usr/bin/docker kill newznab
 ExecStartPre=-/usr/bin/docker rm newnab
 
-ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=3000 -e VIRTUAL_HOST=newznab.$domain -v $docker_base_path/newznab:/nzb -v /etc/localtime:/etc/localtime:ro --name="newznab" newznab
+ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=80 -e VIRTUAL_HOST=newznab.$domain -v $docker_base_path/newznab:/nzb -v /etc/localtime:/etc/localtime:ro --name="newznab" newznab
 ExecStop=/usr/bin/docker stop newznab
 
 [Install]

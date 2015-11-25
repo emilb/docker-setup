@@ -42,8 +42,9 @@ echo "Generating SSL keys..."
 docker-services/generate-ssl-keys.sh
 
 echo "All is done, rember to keep generated passwords safe!"
-cat passwords.sh | sed s/export //g
+cat passwords.sh | sed s/'export '//g
 
+echo ""
 echo "Some services are dependent on the existence of /mnt/iscsi"
 echo "newznab"
 echo "nzbget"
