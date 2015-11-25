@@ -152,13 +152,56 @@ Restart=always
 ExecStartPre=-/usr/bin/docker kill mysql
 ExecStartPre=-/usr/bin/docker rm mysql
 
-ExecStart=/usr/bin/docker run $log_config -v $docker_base_path/mysql:/var/lib/mysql -e MYSQL_ROOT_PASSWORD="$mysql_root" -e MYSQL_USER=newznab -e MYSQL_PASSWORD="$mysql_newznab" -e MYSQL_DATABASE=newznab --name mysql mysql:latest
+ExecStart=/usr/bin/docker run $log_config -v $docker_base_path/mysql:/var/lib/mysql -e MYSQL_ROOT_PASSWORD="$mysql_root" -e MYSQL_USER=newznab -e MYSQL_PASSWORD="$mysql_newznab_password" -e MYSQL_DATABASE=newznab --name mysql mysql:latest
 
 ExecStop=/usr/bin/docker stop mysql
 
 [Install]
 WantedBy=multi-user.target
 EOF
+
+#**** newznab-docker.service ****
+cat << EOF > /etc/systemd/system/newznab-docker.service
+[Unit]
+Description=newznab container
+Requires=docker.service mysql-docker.service
+After=docker.service mysql-docker.service
+
+[Service]
+Restart=always
+
+ExecStartPre=-/usr/bin/docker kill newznab
+ExecStartPre=-/usr/bin/docker rm newnab
+
+ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=3000 -e VIRTUAL_HOST=newznab.$domain -v $docker_base_path/newznab:/nzb -v /etc/localtime:/etc/localtime:ro --name="newznab" newznab
+ExecStop=/usr/bin/docker stop newznab
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+#**** plex-docker.service ****
+cat << EOF > /etc/systemd/system/plex-docker.service
+[Unit]
+Description=plex container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+
+ExecStartPre=-/usr/bin/docker kill plex
+ExecStartPre=-/usr/bin/docker rm plex
+
+ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=32400 -e VIRTUAL_HOST=plex.$domain -e VERSION="plexpass" -v /mnt/iscsi/transcode:/transcode -v $docker_base_path/plex/config:/config -v /mnt/iscsi/tv:/data/tvshows -v /mnt/iscsi/movies:/data/movies --name=plex linuxserver/plex
+ExecStop=/usr/bin/docker stop plex
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+
+
 
 
 
@@ -170,4 +213,5 @@ systemctl enable nginx-proxy-docker.service
 systemctl enable influxdb-docker.service
 systemctl enable grafana-docker.service
 systemctl enable mysql-docker.service
+systemctl enable newznab-docker.service
 

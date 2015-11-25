@@ -2,10 +2,10 @@
 export domain="northpath.se"
 export docker_base_path="/data"
 export docker_base_path_iscsi="/mnt/iscsi"
-export password_keys="emil patrik admin root_user mysql_root mysql_newznab grafana influx graylog graylog_server_secret"
+export password_keys="emil patrik admin root_user mysql_root mysql_newznab_password grafana influx graylog graylog_server_secret"
 export users="emil patrik admin"
 export allowed_samba_nets="213.185.253.3"
-export subdomains="www nzbs nzbget tv plex graylog grafana vpn"
+export subdomains="www newznab nzbget tv plex graylog grafana vpn"
 
 echo "Enter the SVN username for newznab, followed by [ENTER]:"
 read user

@@ -4,9 +4,11 @@ docker pull crosbymichael/skydns
 docker pull jwilder/nginx-proxy
 docker pull tutum/influxdb
 docker pull grafana/grafana
-
-docker pull linuxserver/nzbget
 docker pull mysql
+
+docker pull linuxserver/plex
+docker pull linuxserver/nzbget
+
 
 # newznab
 # vpn

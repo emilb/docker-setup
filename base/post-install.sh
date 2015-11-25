@@ -32,7 +32,7 @@ chmod +x /etc/update-motd.d/10-banner-text
 
 cat << EOF > /etc/update-motd.d/30-docker-status
 #!/bin/sh
-/usr/bin/docker ps --format "table {{.ID}}\t{{.Names}\t{{.Image}}\t{{.Status}}\t{{.Size}}"
+/usr/bin/docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Size}}"
 EOF
 chmod +x /etc/update-motd.d/30-docker-status
 
@@ -47,6 +47,17 @@ df -h
 echo
 EOF
 chmod +x /etc/update-motd.d/40-system-stats
+
+cat << EOF > /etc/update-motd.d/50-sysinfo-stats
+#!/bin/sh
+landscape-sysinfo
+EOF
+chmod +x /etc/update-motd.d/50-sysinfo-stats
+
+
+
+echo "Fixing system locale"
+base/fix-locale.sh
 
 echo "Configuring sensorsd..."
 sensors-detect
