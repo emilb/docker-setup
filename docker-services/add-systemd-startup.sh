@@ -214,4 +214,5 @@ systemctl enable influxdb-docker.service
 systemctl enable grafana-docker.service
 systemctl enable mysql-docker.service
 systemctl enable newznab-docker.service
+systemctl enable plex-docker.service
 

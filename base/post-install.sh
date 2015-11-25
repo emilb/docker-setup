@@ -48,14 +48,6 @@ echo
 EOF
 chmod +x /etc/update-motd.d/40-system-stats
 
-cat << EOF > /etc/update-motd.d/50-sysinfo-stats
-#!/bin/sh
-landscape-sysinfo
-EOF
-chmod +x /etc/update-motd.d/50-sysinfo-stats
-
-
-
 echo "Fixing system locale"
 base/fix-locale.sh
 
