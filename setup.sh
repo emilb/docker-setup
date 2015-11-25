@@ -11,7 +11,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 source config.sh
-s
+
 echo "Base install..."
 base/base-install.sh
 
