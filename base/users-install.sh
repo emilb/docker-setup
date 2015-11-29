@@ -11,7 +11,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Create common group
-groupadd fileshare
+groupadd $common_group
 
 # Create users
 tokens=($users)
@@ -24,7 +24,7 @@ do
 	# Add admin users to correct groups
 	usermod -aG sudo $user
 	usermod -aG docker $user
-	usermod -aG fileshare $user
+	usermod -aG $common_group $user
 done
 
 # Reset root password

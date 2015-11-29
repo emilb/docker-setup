@@ -8,6 +8,8 @@ docker pull mysql
 
 docker pull linuxserver/plex
 docker pull linuxserver/nzbget
+docker pull linuxserver/couchpotato
+docker pull linuxserver/sonarr
 
 
 # newznab
@@ -15,7 +17,8 @@ docker pull linuxserver/nzbget
 
 # Dependent on fileshare mounted
 # plex
-# sonarr
 # nzbget
+# couchpotato
+# sonarr
 
 

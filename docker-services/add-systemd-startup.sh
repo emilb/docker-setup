@@ -10,6 +10,9 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+guid=`id -g fileshare`
+uid=`id -u admin`
+
 #log_config="--log-driver=gelf --log-opt gelf-address=udp://localhost:12201"
 log_config=""
 
@@ -161,24 +164,24 @@ WantedBy=multi-user.target
 EOF
 
 #**** newznab-docker.service ****
-cat << EOF > /etc/systemd/system/newznab-docker.service
-[Unit]
-Description=newznab container
-Requires=docker.service mysql-docker.service
-After=docker.service mysql-docker.service
-
-[Service]
-Restart=always
-
-ExecStartPre=-/usr/bin/docker kill newznab
-ExecStartPre=-/usr/bin/docker rm newnab
-
-ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=80 -e VIRTUAL_HOST=newznab.$domain -v $docker_base_path/newznab:/nzb -v /etc/localtime:/etc/localtime:ro --name="newznab" newznab
-ExecStop=/usr/bin/docker stop newznab
-
-[Install]
-WantedBy=multi-user.target
-EOF
+#cat << EOF > /etc/systemd/system/newznab-docker.service
+#[Unit]
+#Description=newznab container
+#Requires=docker.service mysql-docker.service
+#After=docker.service mysql-docker.service
+#
+#[Service]
+#Restart=always
+#
+#ExecStartPre=-/usr/bin/docker kill newznab
+#ExecStartPre=-/usr/bin/docker rm newnab
+#
+#ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=80 -e VIRTUAL_HOST=newznab.$domain -v $docker_base_path/newznab:/nzb -v /etc/localtime:/etc/localtime:ro --name="newznab" newznab
+#ExecStop=/usr/bin/docker stop newznab
+#
+#[Install]
+#WantedBy=multi-user.target
+#EOF
 
 #**** plex-docker.service ****
 cat << EOF > /etc/systemd/system/plex-docker.service
@@ -193,16 +196,72 @@ Restart=always
 ExecStartPre=-/usr/bin/docker kill plex
 ExecStartPre=-/usr/bin/docker rm plex
 
-ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=32400 -e VIRTUAL_HOST=plex.$domain -e VERSION="plexpass" -v /mnt/iscsi/transcode:/transcode -v $docker_base_path/plex/config:/config -v /mnt/iscsi/tv:/data/tvshows -v /mnt/iscsi/movies:/data/movies --name=plex linuxserver/plex
+ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=32400 -e VIRTUAL_HOST=plex.$domain -e PGID=$guid -e PUID=$uid -e VERSION="plexpass" -v /mnt/iscsi/transcode:/transcode -v $docker_base_path/plex/config:/config -v $tv_path:/data/tvshows -v $movies_path:/data/movies --name=plex linuxserver/plex
 ExecStop=/usr/bin/docker stop plex
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
+#**** couchpotato-docker.service ****
+cat << EOF > /etc/systemd/system/couchpotato-docker.service
+[Unit]
+Description=couchpotato container
+Requires=docker.service
+After=docker.service
 
+[Service]
+Restart=always
 
+ExecStartPre=-/usr/bin/docker kill couchpotato
+ExecStartPre=-/usr/bin/docker rm couchpotato
 
+ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=5050 -e VIRTUAL_HOST=movies.$domain -v /etc/localtime:/etc/localtime:ro -v $docker_base_path/couchpotato/config:/config -v $downloads_path:/downloads -v $movies_path:/movies -e PGID=$guid -e PUID=$uid --name=couchpotato linuxserver/couchpotato
+ExecStop=/usr/bin/docker stop couchpotato
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+#**** sonarr-docker.service ****
+cat << EOF > /etc/systemd/system/sonarr-docker.service
+[Unit]
+Description=sonarr container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+
+ExecStartPre=-/usr/bin/docker kill sonarr
+ExecStartPre=-/usr/bin/docker rm sonarr
+
+ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=8989 -e VIRTUAL_HOST=tv.$domain -v /dev/rtc:/dev/rtc:ro -v $docker_base_path/sonarr/config:/config -v $downloads_path:/downloads -v $tv_path:/tv -e PGID=$guid -e PUID=$uid --name=sonarr linuxserver/sonarr
+ExecStop=/usr/bin/docker stop sonarr
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+#**** nzbget-docker.service ****
+cat << EOF > /etc/systemd/system/nzbget-docker.service
+[Unit]
+Description=nzbget container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+
+ExecStartPre=-/usr/bin/docker kill nzbget
+ExecStartPre=-/usr/bin/docker rm nzbget
+
+ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=6789 -e VIRTUAL_HOST=nzbget.$domain -v /etc/localtime:/etc/localtime:ro -v $docker_base_path/nzbget/config:/config -v $downloads_path:/downloads -e PGID=$guid -e PUID=$uid --name=nzbget linuxserver/nzbget
+ExecStop=/usr/bin/docker stop nzbget
+
+[Install]
+WantedBy=multi-user.target
+EOF
 
 
 systemctl daemon-reload
@@ -213,6 +272,8 @@ systemctl enable nginx-proxy-docker.service
 systemctl enable influxdb-docker.service
 systemctl enable grafana-docker.service
 systemctl enable mysql-docker.service
-systemctl enable newznab-docker.service
+#systemctl enable newznab-docker.service
 systemctl enable plex-docker.service
+systemctl enable couchpotato-docker.service
+systemctl enable nzbget-docker.service
 

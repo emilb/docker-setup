@@ -54,16 +54,6 @@ base/fix-locale.sh
 echo "Configuring sensorsd..."
 sensors-detect
 
-#echo "Locale fix"
-#cat << EOF > /etc/default/locale
-#LANG="en_GB"
-#LANGUAGE="en_GB.UTF-8"
-#LC_ALL="en_GB.UTF-8"
-#EOF
-
-#locale-gen en_GB
-#dpkg-reconfigure locales
-
 echo "Configuring smartmontools"
 cat << EOF >> /etc/smartd.conf
 /dev/cciss/c0d0p1 -d cciss,0 -a -s (L/../../7/02|S/../.././02) -m root
