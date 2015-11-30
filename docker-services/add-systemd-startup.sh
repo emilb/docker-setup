@@ -13,6 +13,26 @@ fi
 guid=`id -g fileshare`
 uid=`id -u admin`
 
+cat << EOF > /etc/default/northpath
+# Northpath system defaults
+
+# Data paths
+GRAYLOG_DATA_DIR="$docker_base_path/graylog/data"
+GRAYLOG_LOG_DIR="$docker_base_path/graylog/logs"
+NGINX_CERTS_DIR="$docker_base_path/nginx-proxy/certs"
+INFLUXDB_DATA_DIR="$docker_base_path/influxdb"
+GRAFANA_DATA_DIR="$docker_base_path/grafana"
+MYSQL_DATA_DIR="$docker_base_path/mysql"
+MOVIES_DIR="$movies_path"
+TV_DIR="$tv_path"
+PLEX_CONFIG_DIR="$docker_base_path/plex/config"
+PLEX_TRANSCODE_DIR="$docker_base_path_iscsi/transcode"
+COUCHPOTATO_CONFIG_DIR="$docker_base_path/couchpotato/config"
+SONARR_CONFIG_DIR="$docker_base_path/sonarr/config"
+NZBGET_CONFIG_DIR="$docker_base_path/nzbget/config"
+
+EOF
+
 #log_config="--log-driver=gelf --log-opt gelf-address=udp://localhost:12201"
 log_config=""
 
@@ -25,11 +45,27 @@ After=docker.service
 
 [Service]
 Restart=always
+EnvironmentFile=/etc/default/northpath
 
 ExecStartPre=-/usr/bin/docker kill graylog
 ExecStartPre=-/usr/bin/docker rm graylog
 
-ExecStart=/usr/bin/docker run -p 9000:9000 -p 12201:12201 -p 12201:12201/udp -e VIRTUAL_PORT=9000 -e VIRTUAL_HOST=graylog.$domain -e GRAYLOG_USERNAME=admin -e GRAYLOG_PASSWORD=$graylog -e GRAYLOG_TIMEZONE=Europe/Stockholm -e GRAYLOG_SERVER_SECRET=$graylog_server_secret -e ES_MEMORY=4g -e GRAYLOG_RETENTION="--size=3 --indices=10" -v $docker_base_path/graylog/data:/var/opt/graylog/data -v $docker_base_path/graylog/logs:/var/log/graylog --name graylog graylog2/allinone
+ExecStart=/usr/bin/docker run \
+	-p 9000:9000 \
+	-p 12201:12201 \
+	-p 12201:12201/udp \
+	-e VIRTUAL_PORT=9000 \
+	-e VIRTUAL_HOST=graylog.$domain \
+	-e GRAYLOG_USERNAME=admin \
+	-e GRAYLOG_PASSWORD=$graylog \
+	-e GRAYLOG_TIMEZONE=Europe/Stockholm \
+	-e GRAYLOG_SERVER_SECRET=$graylog_server_secret \
+	-e ES_MEMORY=4g \
+	-e GRAYLOG_RETENTION="--size=3 --indices=10" \
+	-v \$GRAYLOG_DATA_DIR:/var/opt/graylog/data \
+	-v \$GRAYLOG_LOG_DIR:/var/log/graylog \
+	--name graylog \
+	graylog2/allinone
 
 ExecStop=/usr/bin/docker stop graylog
 
@@ -46,11 +82,16 @@ After=docker.service graylog-docker.service
 
 [Service]
 Restart=always
+EnvironmentFile=/etc/default/northpath
 
 ExecStartPre=-/usr/bin/docker kill skydns
 ExecStartPre=-/usr/bin/docker rm skydns
 
-ExecStart=/usr/bin/docker run $log_config -p 172.17.0.1:53:53/udp --name skydns crosbymichael/skydns -nameserver 8.8.8.8:53 -domain docker
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	-p 172.17.0.1:53:53/udp \
+	--name skydns \
+	crosbymichael/skydns -nameserver 8.8.8.8:53 -domain docker
 
 ExecStop=/usr/bin/docker stop skydns
 
@@ -67,11 +108,17 @@ After=skydns-docker.service
 
 [Service]
 Restart=always
+EnvironmentFile=/etc/default/northpath
 
 ExecStartPre=-/usr/bin/docker kill skydock
 ExecStartPre=-/usr/bin/docker rm skydock
 
-ExecStart=/usr/bin/docker run $log_config -v /var/run/docker.sock:/docker.sock --link="skydns" --name skydock crosbymichael/skydock -ttl 30 -environment prod -s /docker.sock -domain docker -name skydns
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	-v /var/run/docker.sock:/docker.sock \
+	--link="skydns" \
+	--name skydock \
+	crosbymichael/skydock -ttl 30 -environment prod -s /docker.sock -domain docker -name skydns
 
 ExecStop=/usr/bin/docker stop skydock
 
@@ -88,11 +135,18 @@ After=docker.service skydock-docker.service
 
 [Service]
 Restart=always
+EnvironmentFile=/etc/default/northpath
 
 ExecStartPre=-/usr/bin/docker kill nginx-proxy
 ExecStartPre=-/usr/bin/docker rm nginx-proxy
 
-ExecStart=/usr/bin/docker run $log_config -p 443:443 -v $docker_base_path/nginx-proxy/certs:/etc/nginx/certs -v /var/run/docker.sock:/tmp/docker.sock:ro --name nginx-proxy jwilder/nginx-proxy
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	-p 443:443 \
+	-v \$NGINX_CERTS_DIR:/etc/nginx/certs \
+	-v /var/run/docker.sock:/tmp/docker.sock:ro \
+	--name nginx-proxy \
+	jwilder/nginx-proxy
 
 ExecStop=/usr/bin/docker stop nginx-proxy
 
@@ -109,11 +163,25 @@ After=nginx-proxy-docker.service skydock-docker.service
 
 [Service]
 Restart=always
+EnvironmentFile=/etc/default/northpath
 
 ExecStartPre=-/usr/bin/docker kill influxdb
 ExecStartPre=-/usr/bin/docker rm influxdb
 
-ExecStart=/usr/bin/docker run $log_config -p 25826:25826/udp -p 8086:8086 -e VIRTUAL_PORT=8083 -e VIRTUAL_HOST=influxdb.$domain -e ADMIN_USER="root" -e INFLUXDB_INIT_PWD="$influx" -e PRE_CREATE_DB=collectdb -e COLLECTD_DB="collectdb" -e COLLECTD_BINDING=':25826' -v $docker_base_path/influxdb:/data --name influxdb tutum/influxdb
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	-p 25826:25826/udp \
+	-p 8086:8086 \
+	-e VIRTUAL_PORT=8083 \
+	-e VIRTUAL_HOST=influxdb.$domain \
+	-e ADMIN_USER="root" \
+	-e INFLUXDB_INIT_PWD="$influx" \
+	-e PRE_CREATE_DB=collectdb \
+	-e COLLECTD_DB="collectdb" \
+	-e COLLECTD_BINDING=':25826' \
+	-v \$INFLUXDB_DATA_DIR:/data \
+	--name influxdb \
+	tutum/influxdb
 
 ExecStop=/usr/bin/docker stop influxdb
 
@@ -130,11 +198,20 @@ After=nginx-proxy-docker.service graylog-docker.service
 
 [Service]
 Restart=always
+EnvironmentFile=/etc/default/northpath
 
 ExecStartPre=-/usr/bin/docker kill grafana
 ExecStartPre=-/usr/bin/docker rm grafana
 
-ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=3000 -e VIRTUAL_HOST=grafana.$domain -e GF_SERVER_ROOT_URL="http://grafana.$domain/" -e GF_SECURITY_ADMIN_PASSWORD="$grafana" -v $docker_base_path/grafana:/var/lib/grafana --name grafana grafana/grafana
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	-e VIRTUAL_PORT=3000 \
+	-e VIRTUAL_HOST=grafana.$domain \
+	-e GF_SERVER_ROOT_URL="http://grafana.$domain/" \
+	-e GF_SECURITY_ADMIN_PASSWORD="$grafana" \
+	-v \$GRAFANA_DATA_DIR:/var/lib/grafana \
+	--name grafana \
+	grafana/grafana
 
 ExecStop=/usr/bin/docker stop grafana
 
@@ -155,7 +232,15 @@ Restart=always
 ExecStartPre=-/usr/bin/docker kill mysql
 ExecStartPre=-/usr/bin/docker rm mysql
 
-ExecStart=/usr/bin/docker run $log_config -v $docker_base_path/mysql:/var/lib/mysql -e MYSQL_ROOT_PASSWORD="$mysql_root" -e MYSQL_USER=newznab -e MYSQL_PASSWORD="$mysql_newznab_password" -e MYSQL_DATABASE=newznab --name mysql mysql:latest
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	-v \$MYSQL_DATA_DIR:/var/lib/mysql \
+	-e MYSQL_ROOT_PASSWORD="$mysql_root" \
+	-e MYSQL_USER=newznab \
+	-e MYSQL_PASSWORD="$mysql_newznab_password" \
+	-e MYSQL_DATABASE=newznab \
+	--name mysql \
+	mysql:latest
 
 ExecStop=/usr/bin/docker stop mysql
 
@@ -196,7 +281,20 @@ Restart=always
 ExecStartPre=-/usr/bin/docker kill plex
 ExecStartPre=-/usr/bin/docker rm plex
 
-ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=32400 -e VIRTUAL_HOST=plex.$domain -e PGID=$guid -e PUID=$uid -e VERSION="plexpass" -v /mnt/iscsi/transcode:/transcode -v $docker_base_path/plex/config:/config -v $tv_path:/data/tvshows -v $movies_path:/data/movies --name=plex linuxserver/plex
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	-e VIRTUAL_PORT=32400 \
+	-e VIRTUAL_HOST=plex.$domain \
+	-e PGID=$guid \
+	-e PUID=$uid \
+	-e VERSION="plexpass" \
+	-v \$PLEX_TRANSCODE_DIR:/transcode \
+	-v \$PLEX_CONFIG_DIR:/config \
+	-v \$TV_DIR:/data/tvshows \
+	-v \$MOVIES_DIR:/data/movies \
+	--name=plex \
+	linuxserver/plex
+
 ExecStop=/usr/bin/docker stop plex
 
 [Install]
@@ -216,7 +314,19 @@ Restart=always
 ExecStartPre=-/usr/bin/docker kill couchpotato
 ExecStartPre=-/usr/bin/docker rm couchpotato
 
-ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=5050 -e VIRTUAL_HOST=movies.$domain -v /etc/localtime:/etc/localtime:ro -v $docker_base_path/couchpotato/config:/config -v $downloads_path:/downloads -v $movies_path:/movies -e PGID=$guid -e PUID=$uid --name=couchpotato linuxserver/couchpotato
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	-e VIRTUAL_PORT=5050 \
+	-e VIRTUAL_HOST=movies.$domain \
+	-v /etc/localtime:/etc/localtime:ro \
+	-v \$COUCHPOTATO_CONFIG_DIR:/config \
+	-v $downloads_path:/downloads \
+	-v \$MOVIES_DIR:/movies \
+	-e PGID=$guid \
+	-e PUID=$uid \
+	--name=couchpotato \
+	linuxserver/couchpotato
+
 ExecStop=/usr/bin/docker stop couchpotato
 
 [Install]
@@ -236,7 +346,19 @@ Restart=always
 ExecStartPre=-/usr/bin/docker kill sonarr
 ExecStartPre=-/usr/bin/docker rm sonarr
 
-ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=8989 -e VIRTUAL_HOST=tv.$domain -v /dev/rtc:/dev/rtc:ro -v $docker_base_path/sonarr/config:/config -v $downloads_path:/downloads -v $tv_path:/tv -e PGID=$guid -e PUID=$uid --name=sonarr linuxserver/sonarr
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	-e VIRTUAL_PORT=8989 \
+	-e VIRTUAL_HOST=tv.$domain \
+	-v /dev/rtc:/dev/rtc:ro \
+	-v \$SONARR_CONFIG_DIR:/config \
+	-v $downloads_path:/downloads \
+	-v \$TV_DIR:/tv \
+	-e PGID=$guid \
+	-e PUID=$uid \
+	--name=sonarr \
+	linuxserver/sonarr
+
 ExecStop=/usr/bin/docker stop sonarr
 
 [Install]
@@ -256,7 +378,18 @@ Restart=always
 ExecStartPre=-/usr/bin/docker kill nzbget
 ExecStartPre=-/usr/bin/docker rm nzbget
 
-ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=6789 -e VIRTUAL_HOST=nzbget.$domain -v /etc/localtime:/etc/localtime:ro -v $docker_base_path/nzbget/config:/config -v $downloads_path:/downloads -e PGID=$guid -e PUID=$uid --name=nzbget linuxserver/nzbget
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	-e VIRTUAL_PORT=6789 \
+	-e VIRTUAL_HOST=nzbget.$domain \
+	-v /etc/localtime:/etc/localtime:ro \
+	-v \$NZBGET_CONFIG_DIR:/config \
+	-v $downloads_path:/downloads \
+	-e PGID=$guid \
+	-e PUID=$uid \
+	--name=nzbget \
+	linuxserver/nzbget
+
 ExecStop=/usr/bin/docker stop nzbget
 
 [Install]
