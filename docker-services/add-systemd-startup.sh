@@ -10,7 +10,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-guid=`id -g fileshare`
+guid=`getent group fileshare | cut -d: -f3`
 uid=`id -u admin`
 
 cat << EOF > /etc/default/northpath
@@ -30,7 +30,7 @@ PLEX_TRANSCODE_DIR="$docker_base_path_iscsi/transcode"
 COUCHPOTATO_CONFIG_DIR="$docker_base_path/couchpotato/config"
 SONARR_CONFIG_DIR="$docker_base_path/sonarr/config"
 NZBGET_CONFIG_DIR="$docker_base_path/nzbget/config"
-
+DOWNLOADS_DIR="$downloads_path"
 EOF
 
 #log_config="--log-driver=gelf --log-opt gelf-address=udp://localhost:12201"
@@ -220,33 +220,33 @@ WantedBy=multi-user.target
 EOF
 
 #**** mysql-docker.service ****
-cat << EOF > /etc/systemd/system/mysql-docker.service
-[Unit]
-Description=mysql container
-Requires=docker.service graylog-docker.service
-After=docker.service graylog-docker.service
-
-[Service]
-Restart=always
-
-ExecStartPre=-/usr/bin/docker kill mysql
-ExecStartPre=-/usr/bin/docker rm mysql
-
-ExecStart=/usr/bin/docker run \
-	$log_config \
-	-v \$MYSQL_DATA_DIR:/var/lib/mysql \
-	-e MYSQL_ROOT_PASSWORD="$mysql_root" \
-	-e MYSQL_USER=newznab \
-	-e MYSQL_PASSWORD="$mysql_newznab_password" \
-	-e MYSQL_DATABASE=newznab \
-	--name mysql \
-	mysql:latest
-
-ExecStop=/usr/bin/docker stop mysql
-
-[Install]
-WantedBy=multi-user.target
-EOF
+#cat << EOF > /etc/systemd/system/mysql-docker.service
+#[Unit]
+#Description=mysql container
+#Requires=docker.service graylog-docker.service
+#After=docker.service graylog-docker.service
+#
+#[Service]
+#Restart=always
+#
+#ExecStartPre=-/usr/bin/docker kill mysql
+#ExecStartPre=-/usr/bin/docker rm mysql
+#
+#ExecStart=/usr/bin/docker run \
+#	$log_config \
+#	-v \$MYSQL_DATA_DIR:/var/lib/mysql \
+#	-e MYSQL_ROOT_PASSWORD="$mysql_root" \
+#	-e MYSQL_USER=newznab \
+#	-e MYSQL_PASSWORD="$mysql_newznab_password" \
+#	-e MYSQL_DATABASE=newznab \
+#	--name mysql \
+#	mysql:latest
+#
+#ExecStop=/usr/bin/docker stop mysql
+#
+#[Install]
+#WantedBy=multi-user.target
+#EOF
 
 #**** newznab-docker.service ****
 #cat << EOF > /etc/systemd/system/newznab-docker.service
@@ -320,7 +320,7 @@ ExecStart=/usr/bin/docker run \
 	-e VIRTUAL_HOST=movies.$domain \
 	-v /etc/localtime:/etc/localtime:ro \
 	-v \$COUCHPOTATO_CONFIG_DIR:/config \
-	-v $downloads_path:/downloads \
+	-v \$DOWNLOADS_DIR:/downloads \
 	-v \$MOVIES_DIR:/movies \
 	-e PGID=$guid \
 	-e PUID=$uid \
@@ -352,7 +352,7 @@ ExecStart=/usr/bin/docker run \
 	-e VIRTUAL_HOST=tv.$domain \
 	-v /dev/rtc:/dev/rtc:ro \
 	-v \$SONARR_CONFIG_DIR:/config \
-	-v $downloads_path:/downloads \
+	-v \$DOWNLOADS_DIR:/downloads \
 	-v \$TV_DIR:/tv \
 	-e PGID=$guid \
 	-e PUID=$uid \
@@ -384,7 +384,7 @@ ExecStart=/usr/bin/docker run \
 	-e VIRTUAL_HOST=nzbget.$domain \
 	-v /etc/localtime:/etc/localtime:ro \
 	-v \$NZBGET_CONFIG_DIR:/config \
-	-v $downloads_path:/downloads \
+	-v \$DOWNLOADS_DIR:/downloads \
 	-e PGID=$guid \
 	-e PUID=$uid \
 	--name=nzbget \
@@ -404,7 +404,7 @@ systemctl enable skydock-docker.service
 systemctl enable nginx-proxy-docker.service
 systemctl enable influxdb-docker.service
 systemctl enable grafana-docker.service
-systemctl enable mysql-docker.service
+#systemctl enable mysql-docker.service
 #systemctl enable newznab-docker.service
 systemctl enable plex-docker.service
 systemctl enable couchpotato-docker.service

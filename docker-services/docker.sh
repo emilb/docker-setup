@@ -10,7 +10,9 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-curl -sSL https://get.docker.com/ | sh
+if [ ! `which docker` ]; then
+	curl -sSL https://get.docker.com/ | sh
+fi
 
 echo "Adding docker override setting for DNS"
 
