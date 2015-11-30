@@ -277,6 +277,7 @@ After=docker.service
 
 [Service]
 Restart=always
+EnvironmentFile=/etc/default/northpath
 
 ExecStartPre=-/usr/bin/docker kill plex
 ExecStartPre=-/usr/bin/docker rm plex
@@ -310,6 +311,7 @@ After=docker.service
 
 [Service]
 Restart=always
+EnvironmentFile=/etc/default/northpath
 
 ExecStartPre=-/usr/bin/docker kill couchpotato
 ExecStartPre=-/usr/bin/docker rm couchpotato
@@ -342,6 +344,7 @@ After=docker.service
 
 [Service]
 Restart=always
+EnvironmentFile=/etc/default/northpath
 
 ExecStartPre=-/usr/bin/docker kill sonarr
 ExecStartPre=-/usr/bin/docker rm sonarr
@@ -374,6 +377,7 @@ After=docker.service
 
 [Service]
 Restart=always
+EnvironmentFile=/etc/default/northpath
 
 ExecStartPre=-/usr/bin/docker kill nzbget
 ExecStartPre=-/usr/bin/docker rm nzbget
