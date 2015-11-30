@@ -412,5 +412,6 @@ systemctl enable grafana-docker.service
 #systemctl enable newznab-docker.service
 systemctl enable plex-docker.service
 systemctl enable couchpotato-docker.service
+systemctl enable sonarr-docker.service
 systemctl enable nzbget-docker.service
 
