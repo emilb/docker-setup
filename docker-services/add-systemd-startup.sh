@@ -62,8 +62,8 @@ ExecStart=/usr/bin/docker run \
 	-e GRAYLOG_SERVER_SECRET=$graylog_server_secret \
 	-e ES_MEMORY=4g \
 	-e GRAYLOG_RETENTION="--size=3 --indices=10" \
-	-v \$GRAYLOG_DATA_DIR:/var/opt/graylog/data \
-	-v \$GRAYLOG_LOG_DIR:/var/log/graylog \
+	-v \${GRAYLOG_DATA_DIR}:/var/opt/graylog/data \
+	-v \${GRAYLOG_LOG_DIR}:/var/log/graylog \
 	--name graylog \
 	graylog2/allinone
 
@@ -77,8 +77,8 @@ EOF
 cat << EOF > /etc/systemd/system/skydns-docker.service
 [Unit]
 Description=SkyDNS container
-Requires=docker.service graylog-docker.service
-After=docker.service graylog-docker.service
+Requires=docker.service
+After=docker.service
 
 [Service]
 Restart=always
@@ -103,8 +103,8 @@ EOF
 cat << EOF > /etc/systemd/system/skydock-docker.service
 [Unit]
 Description=SkyDock container
-Requires=skydns-docker.service
-After=skydns-docker.service
+Requires=docker.service
+After=docker.service
 
 [Service]
 Restart=always
@@ -130,8 +130,8 @@ EOF
 cat << EOF > /etc/systemd/system/nginx-proxy-docker.service
 [Unit]
 Description=nginx proxy container
-Requires=docker.service skydock-docker.service
-After=docker.service skydock-docker.service
+Requires=docker.service
+After=docker.service
 
 [Service]
 Restart=always
@@ -143,7 +143,7 @@ ExecStartPre=-/usr/bin/docker rm nginx-proxy
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-p 443:443 \
-	-v \$NGINX_CERTS_DIR:/etc/nginx/certs \
+	-v \${NGINX_CERTS_DIR}:/etc/nginx/certs \
 	-v /var/run/docker.sock:/tmp/docker.sock:ro \
 	--name nginx-proxy \
 	jwilder/nginx-proxy
@@ -158,8 +158,8 @@ EOF
 cat << EOF > /etc/systemd/system/influxdb-docker.service
 [Unit]
 Description=influxdb container
-Requires=docker.service skydock-docker.service
-After=nginx-proxy-docker.service skydock-docker.service
+Requires=docker.service
+After=nginx-proxy-docker.service
 
 [Service]
 Restart=always
@@ -179,7 +179,7 @@ ExecStart=/usr/bin/docker run \
 	-e PRE_CREATE_DB=collectdb \
 	-e COLLECTD_DB="collectdb" \
 	-e COLLECTD_BINDING=':25826' \
-	-v \$INFLUXDB_DATA_DIR:/data \
+	-v \${INFLUXDB_DATA_DIR}:/data \
 	--name influxdb \
 	tutum/influxdb
 
@@ -193,8 +193,8 @@ EOF
 cat << EOF > /etc/systemd/system/grafana-docker.service
 [Unit]
 Description=Grafana container
-Requires=docker.service graylog-docker.service
-After=nginx-proxy-docker.service graylog-docker.service
+Requires=docker.service
+After=nginx-proxy-docker.service
 
 [Service]
 Restart=always
@@ -209,7 +209,7 @@ ExecStart=/usr/bin/docker run \
 	-e VIRTUAL_HOST=grafana.$domain \
 	-e GF_SERVER_ROOT_URL="http://grafana.$domain/" \
 	-e GF_SECURITY_ADMIN_PASSWORD="$grafana" \
-	-v \$GRAFANA_DATA_DIR:/var/lib/grafana \
+	-v \${GRAFANA_DATA_DIR}:/var/lib/grafana \
 	--name grafana \
 	grafana/grafana
 
@@ -289,10 +289,10 @@ ExecStart=/usr/bin/docker run \
 	-e PGID=$guid \
 	-e PUID=$uid \
 	-e VERSION="plexpass" \
-	-v \$PLEX_TRANSCODE_DIR:/transcode \
-	-v \$PLEX_CONFIG_DIR:/config \
-	-v \$TV_DIR:/data/tvshows \
-	-v \$MOVIES_DIR:/data/movies \
+	-v \${PLEX_TRANSCODE_DIR}:/transcode \
+	-v \${PLEX_CONFIG_DIR}:/config \
+	-v \${TV_DIR}:/data/tvshows \
+	-v \${MOVIES_DIR}:/data/movies \
 	--name=plex \
 	linuxserver/plex
 
@@ -321,9 +321,9 @@ ExecStart=/usr/bin/docker run \
 	-e VIRTUAL_PORT=5050 \
 	-e VIRTUAL_HOST=movies.$domain \
 	-v /etc/localtime:/etc/localtime:ro \
-	-v \$COUCHPOTATO_CONFIG_DIR:/config \
-	-v \$DOWNLOADS_DIR:/downloads \
-	-v \$MOVIES_DIR:/movies \
+	-v \${COUCHPOTATO_CONFIG_DIR}:/config \
+	-v \${DOWNLOADS_DIR}:/downloads \
+	-v \${MOVIES_DIR}:/movies \
 	-e PGID=$guid \
 	-e PUID=$uid \
 	--name=couchpotato \
@@ -354,9 +354,9 @@ ExecStart=/usr/bin/docker run \
 	-e VIRTUAL_PORT=8989 \
 	-e VIRTUAL_HOST=tv.$domain \
 	-v /dev/rtc:/dev/rtc:ro \
-	-v \$SONARR_CONFIG_DIR:/config \
-	-v \$DOWNLOADS_DIR:/downloads \
-	-v \$TV_DIR:/tv \
+	-v \${SONARR_CONFIG_DIR}:/config \
+	-v \${DOWNLOADS_DIR}:/downloads \
+	-v \${TV_DIR}:/tv \
 	-e PGID=$guid \
 	-e PUID=$uid \
 	--name=sonarr \
@@ -387,8 +387,8 @@ ExecStart=/usr/bin/docker run \
 	-e VIRTUAL_PORT=6789 \
 	-e VIRTUAL_HOST=nzbget.$domain \
 	-v /etc/localtime:/etc/localtime:ro \
-	-v \$NZBGET_CONFIG_DIR:/config \
-	-v \$DOWNLOADS_DIR:/downloads \
+	-v \${NZBGET_CONFIG_DIR}:/config \
+	-v \${DOWNLOADS_DIR}:/downloads \
 	-e PGID=$guid \
 	-e PUID=$uid \
 	--name=nzbget \

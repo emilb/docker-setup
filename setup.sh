@@ -45,7 +45,7 @@ echo "All is done, rember to keep generated passwords safe!"
 cat passwords.sh | sed s/'export '//g
 
 echo ""
-echo "Some services are dependent on the existence of /mnt/iscsi"
+echo "Some services are dependent on the existence of $docker_base_path_iscsi"
 echo "newznab"
 echo "nzbget"
 echo "sonarr"
