@@ -31,6 +31,7 @@ COUCHPOTATO_CONFIG_DIR="$docker_base_path/couchpotato/config"
 SONARR_CONFIG_DIR="$docker_base_path/sonarr/config"
 NZBGET_CONFIG_DIR="$docker_base_path/nzbget/config"
 DOWNLOADS_DIR="$downloads_path"
+OVPN_DATA="$openvpn_data_name"
 EOF
 
 #log_config="--log-driver=gelf --log-opt gelf-address=udp://localhost:12201"
@@ -400,6 +401,37 @@ ExecStop=/usr/bin/docker stop nzbget
 WantedBy=multi-user.target
 EOF
 
+#**** plex-docker.service ****
+cat << EOF > /etc/systemd/system/openvpn-docker.service
+[Unit]
+Description=openvpn container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+EnvironmentFile=/etc/default/northpath
+
+ExecStartPre=-/usr/bin/docker kill openvpn
+ExecStartPre=-/usr/bin/docker rm openvpn
+
+ExecStart=/usr/bin/docker start \${OVPN_DATA}
+
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	--volumes-from \${OVPN_DATA} \
+	-p 1194:1194/udp \
+	--cap-add=NET_ADMIN \
+	--name=openvpn \
+	kylemanna/openvpn
+
+ExecStop=/usr/bin/docker stop openvpn
+ExecStop=/usr/bin/docker stop \${OVPN_DATA}
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 
 systemctl daemon-reload
 systemctl enable graylog-docker.service
@@ -414,4 +446,6 @@ systemctl enable plex-docker.service
 systemctl enable couchpotato-docker.service
 systemctl enable sonarr-docker.service
 systemctl enable nzbget-docker.service
+systemctl enable openvpn-docker.service
+
 

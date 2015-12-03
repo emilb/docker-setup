@@ -11,6 +11,7 @@ docker pull linuxserver/nzbget
 docker pull linuxserver/couchpotato
 docker pull linuxserver/sonarr
 
+docker pull kylemanna/openvpn
 
 # newznab
 # vpn

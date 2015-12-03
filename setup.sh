@@ -32,6 +32,9 @@ base/users-install.sh
 echo "Pulling docker containers..."
 docker-services/pull-services.sh
 
+echo "Configuring openvpn"
+docker-services/configure-openvpn.sh
+
 echo "Adding systemd for docker containers..."
 docker-services/add-systemd-startup.sh
 
@@ -52,6 +55,8 @@ echo "sonarr"
 echo "plex"
 echo ""
 echo "Check: https://www.howtoforge.com/using-iscsi-on-ubuntu-10.04-initiator-and-target"
+echo ""
+echo "For each user run > google-authenticator to enable two factor login!"
 
 #
 # Problems with apt-get update then run:

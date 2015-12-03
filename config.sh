@@ -10,6 +10,7 @@ export users="emil patrik admin"
 export common_group="fileshare"
 export allowed_samba_nets="213.185.253.3"
 export subdomains="www newznab nzbget tv movies plex graylog grafana vpn influxdb"
+export openvpn_data_name="openvpn_data"
 
 #echo "Enter the SVN username for newznab, followed by [ENTER]:"
 #read user
