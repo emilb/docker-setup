@@ -12,8 +12,6 @@ fi
 
 mkdir -p "$docker_base_path/nginx-proxy/certs"
 
-
-
 tokens=($subdomains)
 for subdomain in "${tokens[@]}"
 do
