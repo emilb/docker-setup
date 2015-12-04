@@ -56,7 +56,7 @@ ExecStart=/usr/bin/docker run \
 	-p 12201:12201 \
 	-p 12201:12201/udp \
 	-e VIRTUAL_PORT=9000 \
-	-e VIRTUAL_HOST=graylog.$domain \
+	-e VIRTUAL_HOST=graylog.$domain,graylog.$internal_domain \
 	-e GRAYLOG_USERNAME=admin \
 	-e GRAYLOG_PASSWORD=$graylog \
 	-e GRAYLOG_TIMEZONE=Europe/Stockholm \
@@ -91,8 +91,11 @@ ExecStartPre=-/usr/bin/docker rm skydns
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-p 172.17.0.1:53:53/udp \
+	-p 172.17.0.1:8080:8080 \
 	--name skydns \
-	crosbymichael/skydns -nameserver 8.8.8.8:53 -domain docker
+	crosbymichael/skydns \
+	    -nameserver 8.8.8.8,8.8.4.4:53 \
+	    -domain $internal_domain
 
 ExecStop=/usr/bin/docker stop skydns
 
@@ -119,7 +122,7 @@ ExecStart=/usr/bin/docker run \
 	-v /var/run/docker.sock:/docker.sock \
 	--link="skydns" \
 	--name skydock \
-	crosbymichael/skydock -ttl 30 -environment prod -s /docker.sock -domain docker -name skydns
+	crosbymichael/skydock -ttl 30 -environment docker -s /docker.sock -domain $internal_domain -name skydns
 
 ExecStop=/usr/bin/docker stop skydock
 
@@ -174,7 +177,7 @@ ExecStart=/usr/bin/docker run \
 	-p 25826:25826/udp \
 	-p 8086:8086 \
 	-e VIRTUAL_PORT=8083 \
-	-e VIRTUAL_HOST=influxdb.$domain \
+	-e VIRTUAL_HOST=influxdb.$domain,influxdb.$internal_domain \
 	-e ADMIN_USER="root" \
 	-e INFLUXDB_INIT_PWD="$influx" \
 	-e PRE_CREATE_DB=collectdb \
@@ -207,8 +210,8 @@ ExecStartPre=-/usr/bin/docker rm grafana
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=3000 \
-	-e VIRTUAL_HOST=grafana.$domain \
-	-e GF_SERVER_ROOT_URL="http://grafana.$domain/" \
+	-e VIRTUAL_HOST=grafana.$domain,grafana.$internal_domain \
+	-e GF_SERVER_ROOT_URL="https://grafana.$domain/" \
 	-e GF_SECURITY_ADMIN_PASSWORD="$grafana" \
 	-v \${GRAFANA_DATA_DIR}:/var/lib/grafana \
 	--name grafana \
@@ -286,7 +289,7 @@ ExecStartPre=-/usr/bin/docker rm plex
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=32400 \
-	-e VIRTUAL_HOST=plex.$domain \
+	-e VIRTUAL_HOST=plex.$domain,plex.$internal_domain \
 	-e PGID=$guid \
 	-e PUID=$uid \
 	-e VERSION="plexpass" \
@@ -320,7 +323,7 @@ ExecStartPre=-/usr/bin/docker rm couchpotato
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=5050 \
-	-e VIRTUAL_HOST=movies.$domain \
+	-e VIRTUAL_HOST=movies.$domain,movies.$internal_domain \
 	-v /etc/localtime:/etc/localtime:ro \
 	-v \${COUCHPOTATO_CONFIG_DIR}:/config \
 	-v \${DOWNLOADS_DIR}:/downloads \
@@ -353,7 +356,7 @@ ExecStartPre=-/usr/bin/docker rm sonarr
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=8989 \
-	-e VIRTUAL_HOST=tv.$domain \
+	-e VIRTUAL_HOST=tv.$domain,tv.$internal_domain \
 	-v /dev/rtc:/dev/rtc:ro \
 	-v \${SONARR_CONFIG_DIR}:/config \
 	-v \${DOWNLOADS_DIR}:/downloads \
@@ -386,7 +389,7 @@ ExecStartPre=-/usr/bin/docker rm nzbget
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=6789 \
-	-e VIRTUAL_HOST=nzbget.$domain \
+	-e VIRTUAL_HOST=nzbget.$domain,nzbget.$internal_domain \
 	-v /etc/localtime:/etc/localtime:ro \
 	-v \${NZBGET_CONFIG_DIR}:/config \
 	-v \${DOWNLOADS_DIR}:/downloads \
@@ -401,7 +404,7 @@ ExecStop=/usr/bin/docker stop nzbget
 WantedBy=multi-user.target
 EOF
 
-#**** plex-docker.service ****
+#**** openvpn-docker.service ****
 cat << EOF > /etc/systemd/system/openvpn-docker.service
 [Unit]
 Description=openvpn container
@@ -415,8 +418,6 @@ EnvironmentFile=/etc/default/northpath
 ExecStartPre=-/usr/bin/docker kill openvpn
 ExecStartPre=-/usr/bin/docker rm openvpn
 
-ExecStart=/usr/bin/docker start \${OVPN_DATA}
-
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	--volumes-from \${OVPN_DATA} \
@@ -426,7 +427,6 @@ ExecStart=/usr/bin/docker run \
 	kylemanna/openvpn
 
 ExecStop=/usr/bin/docker stop openvpn
-ExecStop=/usr/bin/docker stop \${OVPN_DATA}
 
 [Install]
 WantedBy=multi-user.target

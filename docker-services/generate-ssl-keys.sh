@@ -10,16 +10,20 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+echo "Generating self signed certificates to: $docker_base_path/nginx-proxy/certs"
+
 mkdir -p "$docker_base_path/nginx-proxy/certs"
 
+domains=($domain $internal_domain)
 tokens=($subdomains)
 for subdomain in "${tokens[@]}"
 do
+	for currdomain in "${domains[@]}"
+	do
+		hostname="$subdomain.$currdomain"
 
-	hostname="$subdomain.$domain"
-
-	# Create config file
-	cat << EOF > openssl.cnf
+		# Create config file
+		cat << EOF > openssl.cnf
 #-------------openssl.cnf----------------
 [ req ]
 default_bits = 1024 # Size of keys
@@ -50,21 +54,22 @@ localityName_default        = San Francisco
 0.organizationName_default  = Northpath Industries
 organizationalUnitName_default  = Survival dept
 commonName_default          = $hostname
-emailAddress_default            = admin@$domain
+emailAddress_default            = admin@$currdomain
 EOF
 
-	# Create
-	openssl genrsa -des3 -passout pass:x -out $hostname.pass.key 2048
-	openssl rsa -passin pass:x -in $hostname.pass.key -out $hostname.key
-	rm $hostname.pass.key
+		# Create
+		openssl genrsa -des3 -passout pass:x -out $hostname.pass.key 2048 > /dev/null
+		openssl rsa -passin pass:x -in $hostname.pass.key -out $hostname.key > /dev/null
+		rm $hostname.pass.key > /dev/null
 
-	openssl req -new -key $hostname.key -out $hostname.csr -config openssl.cnf -batch
+		openssl req -new -key $hostname.key -out $hostname.csr -config openssl.cnf -batch > /dev/null
 
-	openssl x509 -req -days 1825 -in $hostname.csr -signkey $hostname.key -out $hostname.crt
+		openssl x509 -req -days 1825 -in $hostname.csr -signkey $hostname.key -out $hostname.crt > /dev/null
 
-	mv $hostname.crt "$docker_base_path/nginx-proxy/certs/"
-	mv $hostname.key "$docker_base_path/nginx-proxy/certs/"
+		mv $hostname.crt "$docker_base_path/nginx-proxy/certs/" > /dev/null
+		mv $hostname.key "$docker_base_path/nginx-proxy/certs/" > /dev/null
 
-	rm $hostname.csr
-	rm openssl.cnf
+		rm $hostname.csr > /dev/null
+		rm openssl.cnf > /dev/null
+	done
 done

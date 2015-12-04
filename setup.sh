@@ -44,6 +44,7 @@ docker-services/add-systemd-startup.sh
 echo "Generating SSL keys..."
 docker-services/generate-ssl-keys.sh
 
+echo ""
 echo "All is done, rember to keep generated passwords safe!"
 cat passwords.sh | sed s/'export '//g
 
@@ -56,7 +57,8 @@ echo "plex"
 echo ""
 echo "Check: https://www.howtoforge.com/using-iscsi-on-ubuntu-10.04-initiator-and-target"
 echo ""
-echo "For each user run > google-authenticator to enable two factor login!"
+echo "For each user run > google-authenticator to setup two factor login!"
+echo "To disable two factor login run: ./disable-two-factor-login.sh"
 
 #
 # Problems with apt-get update then run:
