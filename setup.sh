@@ -18,7 +18,7 @@ base/base-install.sh
 echo "Generating passwords..."
 ./generate-passwords.sh
 
-source passwords.sh
+source ~/passwords.sh
 
 echo "Post install..."
 base/post-install.sh
@@ -38,15 +38,12 @@ docker-services/configure-openvpn.sh
 echo "Adding systemd for docker containers..."
 docker-services/add-systemd-startup.sh
 
-#echo "Creating newznab docker"
-#docker-services/newznab.sh
-
 echo "Generating SSL keys..."
 docker-services/generate-ssl-keys.sh
 
 echo ""
 echo "All is done, rember to keep generated passwords safe!"
-cat passwords.sh | sed s/'export '//g
+cat ~/passwords.sh | sed s/'export '//g
 
 echo ""
 echo "Some services are dependent on the existence of $docker_base_path_iscsi"

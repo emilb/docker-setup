@@ -90,8 +90,8 @@ ExecStartPre=-/usr/bin/docker rm skydns
 
 ExecStart=/usr/bin/docker run \
 	$log_config \
-	-p 172.17.0.1:53:53/udp \
-	-p 172.17.0.1:8080:8080 \
+	-p $docker_ip:53:53/udp \
+	-p $docker_ip:8080:8080 \
 	--name skydns \
 	crosbymichael/skydns \
 	    -nameserver 8.8.8.8,8.8.4.4:53 \
