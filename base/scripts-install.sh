@@ -15,18 +15,18 @@ mkdir -p /opt/scripts
 cat << EOF > /opt/scripts/first-register-dns.sh
 #!/bin/bash
 
-source $1
+source \$1
 
 # Get IP for nginx-proxy
-dockerip=`ip addr | awk '/inet/ && /docker0/{sub(/\/.*\$/,"",\$2); print \$2}'`
+dockerip=\`ip addr | awk '/inet/ && /docker0/{sub(/\/.*\$/,"",\$2); print \$2}'\`
 nginxproxyip=\$(dig @\$dockerip +short nginx-proxy.docker.\$DOMAIN)
-skydnsip=`dig @\$dockerip +short skydns.docker.\$DOMAIN`
+skydnsip=\`dig @\$dockerip +short skydns.docker.\$DOMAIN\`
 
 tokens=(\$SUBDOMAINS)
 counter=0
 for subdomain in "\${tokens[@]}"
 do
-    echo "registering $subdomain.\$INTERNAL_DOMAIN"
+    echo "registering \$subdomain.\$INTERNAL_DOMAIN"
     sequence=`printf "%03d\n" \$counter`
 
     data=`echo "{\"Name\":\"\$subdomain\",\"Environment\":\"internal\",\"Port\":80,\"host\":\"\$nginxproxyip\",\"TTL\":900}"`
@@ -39,18 +39,18 @@ chmod +x /opt/scripts/first-register-dns.sh
 cat << EOF > /opt/scripts/re-register-dns.sh
 #!/bin/bash
 
-source $1
+source \$1
 
 # Get IP for nginx-proxy
-dockerip=`ip addr | awk '/inet/ && /docker0/{sub(/\/.*\$/,"",\$2); print \$2}'`
+dockerip=\`ip addr | awk '/inet/ && /docker0/{sub(/\/.*\$/,"",\$2); print \$2}'\`
 nginxproxyip=\$(dig @\$dockerip +short nginx-proxy.docker.\$DOMAIN)
-skydnsip=`dig @\$dockerip +short skydns.docker.\$DOMAIN`
+skydnsip=\`dig @\$dockerip +short skydns.docker.\$DOMAIN\`
 
 tokens=(\$SUBDOMAINS)
 counter=0
 for subdomain in "\${tokens[@]}"
 do
-    echo "registering $subdomain.\$INTERNAL_DOMAIN"
+    echo "registering \$subdomain.\$INTERNAL_DOMAIN"
     sequence=`printf "%03d\n" \$counter`
 
     curl -X PATCH -L http://\$skydnsip:8080/skydns/services/4\$sequence -d '{"TTL":900}'
