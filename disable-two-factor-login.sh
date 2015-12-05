@@ -12,7 +12,7 @@ fi
 
 echo "Disabling two factor login"
 if ( grep 'pam_google_authenticator.so' /etc/pam.d/sshd ); then
-	mv /etc/pam.d/sshd /etc/pam.d/sshd.org > /dev/null
+	  mv /etc/pam.d/sshd /etc/pam.d/sshd.org > /dev/null
     cat /etc/pam.d/sshd.org | sed 's/auth required pam_google_authenticator.*//' > /etc/pam.d/sshd
     rm /etc/pam.d/sshd.org
 else

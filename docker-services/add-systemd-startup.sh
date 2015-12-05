@@ -12,11 +12,11 @@ fi
 
 guid=`getent group fileshare | cut -d: -f3`
 uid=`id -u admin`
+northpath_defaults="/etc/default/northpath"
 
-cat << EOF > /etc/default/northpath
+cat << EOF > $northpath_defaults
 # Northpath system defaults
 
-# Data paths
 GRAYLOG_DATA_DIR="$docker_base_path/graylog/data"
 GRAYLOG_LOG_DIR="$docker_base_path/graylog/logs"
 NGINX_CERTS_DIR="$docker_base_path/nginx-proxy/certs"
@@ -32,6 +32,10 @@ SONARR_CONFIG_DIR="$docker_base_path/sonarr/config"
 NZBGET_CONFIG_DIR="$docker_base_path/nzbget/config"
 DOWNLOADS_DIR="$downloads_path"
 OVPN_DATA="$openvpn_data_name"
+DOMAIN="$domain"
+INTERNAL_DOMAIN="$internal_domain"
+SUBDOMAINS="$subdomains"
+DOCKER_IP="$docker_ip"
 EOF
 
 #log_config="--log-driver=gelf --log-opt gelf-address=udp://localhost:12201"
@@ -46,7 +50,7 @@ After=docker.service
 
 [Service]
 Restart=always
-EnvironmentFile=/etc/default/northpath
+EnvironmentFile=$northpath_defaults
 
 ExecStartPre=-/usr/bin/docker kill graylog
 ExecStartPre=-/usr/bin/docker rm graylog
@@ -83,7 +87,7 @@ After=docker.service
 
 [Service]
 Restart=always
-EnvironmentFile=/etc/default/northpath
+EnvironmentFile=$northpath_defaults
 
 ExecStartPre=-/usr/bin/docker kill skydns
 ExecStartPre=-/usr/bin/docker rm skydns
@@ -94,8 +98,8 @@ ExecStart=/usr/bin/docker run \
 	-p $docker_ip:8080:8080 \
 	--name skydns \
 	crosbymichael/skydns \
-	    -nameserver 8.8.8.8,8.8.4.4:53 \
-	    -domain $internal_domain
+	    -nameserver 8.8.8.8:53,8.8.4.4:53 \
+	    -domain \${DOMAIN}
 
 ExecStop=/usr/bin/docker stop skydns
 
@@ -112,7 +116,7 @@ After=docker.service
 
 [Service]
 Restart=always
-EnvironmentFile=/etc/default/northpath
+EnvironmentFile=$northpath_defaults
 
 ExecStartPre=-/usr/bin/docker kill skydock
 ExecStartPre=-/usr/bin/docker rm skydock
@@ -122,7 +126,7 @@ ExecStart=/usr/bin/docker run \
 	-v /var/run/docker.sock:/docker.sock \
 	--link="skydns" \
 	--name skydock \
-	crosbymichael/skydock -ttl 30 -environment docker -s /docker.sock -domain $internal_domain -name skydns
+	crosbymichael/skydock -ttl 30 -environment docker -s /docker.sock -domain $domain -name skydns
 
 ExecStop=/usr/bin/docker stop skydock
 
@@ -139,7 +143,7 @@ After=docker.service
 
 [Service]
 Restart=always
-EnvironmentFile=/etc/default/northpath
+EnvironmentFile=$northpath_defaults
 
 ExecStartPre=-/usr/bin/docker kill nginx-proxy
 ExecStartPre=-/usr/bin/docker rm nginx-proxy
@@ -167,7 +171,7 @@ After=nginx-proxy-docker.service
 
 [Service]
 Restart=always
-EnvironmentFile=/etc/default/northpath
+EnvironmentFile=$northpath_defaults
 
 ExecStartPre=-/usr/bin/docker kill influxdb
 ExecStartPre=-/usr/bin/docker rm influxdb
@@ -202,7 +206,7 @@ After=nginx-proxy-docker.service
 
 [Service]
 Restart=always
-EnvironmentFile=/etc/default/northpath
+EnvironmentFile=$northpath_defaults
 
 ExecStartPre=-/usr/bin/docker kill grafana
 ExecStartPre=-/usr/bin/docker rm grafana
@@ -223,54 +227,6 @@ ExecStop=/usr/bin/docker stop grafana
 WantedBy=multi-user.target
 EOF
 
-#**** mysql-docker.service ****
-#cat << EOF > /etc/systemd/system/mysql-docker.service
-#[Unit]
-#Description=mysql container
-#Requires=docker.service graylog-docker.service
-#After=docker.service graylog-docker.service
-#
-#[Service]
-#Restart=always
-#
-#ExecStartPre=-/usr/bin/docker kill mysql
-#ExecStartPre=-/usr/bin/docker rm mysql
-#
-#ExecStart=/usr/bin/docker run \
-#	$log_config \
-#	-v \$MYSQL_DATA_DIR:/var/lib/mysql \
-#	-e MYSQL_ROOT_PASSWORD="$mysql_root" \
-#	-e MYSQL_USER=newznab \
-#	-e MYSQL_PASSWORD="$mysql_newznab_password" \
-#	-e MYSQL_DATABASE=newznab \
-#	--name mysql \
-#	mysql:latest
-#
-#ExecStop=/usr/bin/docker stop mysql
-#
-#[Install]
-#WantedBy=multi-user.target
-#EOF
-
-#**** newznab-docker.service ****
-#cat << EOF > /etc/systemd/system/newznab-docker.service
-#[Unit]
-#Description=newznab container
-#Requires=docker.service mysql-docker.service
-#After=docker.service mysql-docker.service
-#
-#[Service]
-#Restart=always
-#
-#ExecStartPre=-/usr/bin/docker kill newznab
-#ExecStartPre=-/usr/bin/docker rm newnab
-#
-#ExecStart=/usr/bin/docker run $log_config -e VIRTUAL_PORT=80 -e VIRTUAL_HOST=newznab.$domain -v $docker_base_path/newznab:/nzb -v /etc/localtime:/etc/localtime:ro --name="newznab" newznab
-#ExecStop=/usr/bin/docker stop newznab
-#
-#[Install]
-#WantedBy=multi-user.target
-#EOF
 
 #**** plex-docker.service ****
 cat << EOF > /etc/systemd/system/plex-docker.service
@@ -281,7 +237,7 @@ After=docker.service
 
 [Service]
 Restart=always
-EnvironmentFile=/etc/default/northpath
+EnvironmentFile=$northpath_defaults
 
 ExecStartPre=-/usr/bin/docker kill plex
 ExecStartPre=-/usr/bin/docker rm plex
@@ -315,7 +271,7 @@ After=docker.service
 
 [Service]
 Restart=always
-EnvironmentFile=/etc/default/northpath
+EnvironmentFile=$northpath_defaults
 
 ExecStartPre=-/usr/bin/docker kill couchpotato
 ExecStartPre=-/usr/bin/docker rm couchpotato
@@ -348,7 +304,7 @@ After=docker.service
 
 [Service]
 Restart=always
-EnvironmentFile=/etc/default/northpath
+EnvironmentFile=$northpath_defaults
 
 ExecStartPre=-/usr/bin/docker kill sonarr
 ExecStartPre=-/usr/bin/docker rm sonarr
@@ -381,7 +337,7 @@ After=docker.service
 
 [Service]
 Restart=always
-EnvironmentFile=/etc/default/northpath
+EnvironmentFile=$northpath_defaults
 
 ExecStartPre=-/usr/bin/docker kill nzbget
 ExecStartPre=-/usr/bin/docker rm nzbget
@@ -413,7 +369,7 @@ After=docker.service
 
 [Service]
 Restart=always
-EnvironmentFile=/etc/default/northpath
+EnvironmentFile=$northpath_defaults
 
 ExecStartPre=-/usr/bin/docker kill openvpn
 ExecStartPre=-/usr/bin/docker rm openvpn
@@ -432,20 +388,73 @@ ExecStop=/usr/bin/docker stop openvpn
 WantedBy=multi-user.target
 EOF
 
+#**** register-dns.timer ****
+cat << EOF > /etc/systemd/system/register-dns.timer
+[Unit]
+Description=Register local services to skydns
+Requires=skydns-docker.service
+After=skydns-docker.service
 
-systemctl daemon-reload
+[Timer]
+OnBootSec=1min
+
+[Install]
+WantedBy=timers.target
+EOF
+
+#**** register-dns.service ****
+cat << EOF > /etc/systemd/system/register-dns.service
+[Unit]
+Description=register-dns service
+
+[Service]
+Type=simple
+EnvironmentFile=$northpath_defaults
+ExecStart=/opt/scripts/first-register-dns.sh $northpath_defaults
+EOF
+
+#**** register-dns.timer ****
+cat << EOF > /etc/systemd/system/re-register-dns.timer
+[Unit]
+Description=Re-register local services to skydns
+Requires=skydns-docker.service
+After=skydns-docker.service
+
+[Timer]
+OnBootSec=10minutes
+OnUnitActiveSec=10minutes	
+
+[Install]
+WantedBy=timers.target
+EOF
+
+#**** register-dns.service ****
+cat << EOF > /etc/systemd/system/re-register-dns.service
+[Unit]
+Description=re-register-dns service
+
+[Service]
+Type=simple
+EnvironmentFile=$northpath_defaults
+ExecStart=/opt/scripts/re-register-dns.sh $northpath_defaults
+EOF
+
 systemctl enable graylog-docker.service
 systemctl enable skydns-docker.service
 systemctl enable skydock-docker.service
 systemctl enable nginx-proxy-docker.service
 systemctl enable influxdb-docker.service
 systemctl enable grafana-docker.service
-#systemctl enable mysql-docker.service
-#systemctl enable newznab-docker.service
 systemctl enable plex-docker.service
 systemctl enable couchpotato-docker.service
 systemctl enable sonarr-docker.service
 systemctl enable nzbget-docker.service
 systemctl enable openvpn-docker.service
 
+systemctl enable register-dns.timer
+systemctl enable re-register-dns.timer
 
+systemctl daemon-reload
+
+find /etc/systemd/system -iname "*.service" -exec chmod +x {} \;
+find /etc/systemd/system -iname "*.timer" -exec chmod +x {} \;

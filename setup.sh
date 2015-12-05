@@ -23,6 +23,9 @@ source ~/passwords.sh
 echo "Post install..."
 base/post-install.sh
 
+echo "Scripts install..."
+base/scripts-install.sh
+
 echo "Installing Docker..."
 docker-services/docker.sh
 
