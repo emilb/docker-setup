@@ -196,19 +196,19 @@ else
     cat /etc/ssh/sshd_config.org | sed 's/PermitRootLogin .*/PermitRootLogin no/' > /etc/ssh/sshd_config
 fi
 
-echo "Enabling two factor login"
-if ( grep 'pam_google_authenticator.so' /etc/pam.d/sshd ); then
-    echo "pam_google_authenticator.so already defined!"
-else
-    echo "Require pam_google_authenticator.so"
-    echo "auth required pam_google_authenticator.so" | tee -a /etc/pam.d/sshd 
-fi
-
-if ( grep 'ChallengeResponseAuthentication yes' /etc/ssh/sshd_config ); then
-    echo "ChallengeResponseAuthentication already set to yes"
-else
-    mv /etc/ssh/sshd_config /etc/ssh/sshd_config.org > /dev/null
-    cat /etc/ssh/sshd_config.org | sed 's/ChallengeResponseAuthentication .*/ChallengeResponseAuthentication yes/' > /etc/ssh/sshd_config
-fi
+#echo "Enabling two factor login"
+#if ( grep 'pam_google_authenticator.so' /etc/pam.d/sshd ); then
+#    echo "pam_google_authenticator.so already defined!"
+#else
+#    echo "Require pam_google_authenticator.so"
+#    echo "auth required pam_google_authenticator.so" | tee -a /etc/pam.d/sshd 
+#fi
+#
+#if ( grep 'ChallengeResponseAuthentication yes' /etc/ssh/sshd_config ); then
+#    echo "ChallengeResponseAuthentication already set to yes"
+#else
+#    mv /etc/ssh/sshd_config /etc/ssh/sshd_config.org > /dev/null
+#    cat /etc/ssh/sshd_config.org | sed 's/ChallengeResponseAuthentication .*/ChallengeResponseAuthentication yes/' > /etc/ssh/sshd_config
+#fi
 systemctl restart ssh
 

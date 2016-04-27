@@ -20,8 +20,8 @@ apt-get -qq -y dist-upgrade > /dev/null
 #####################################################################
 # Install packages
 #####################################################################
-echo "Installing makepasswd pwgen screen htop unzip unrar glances emacs wget curl man mc landscape-common libpam-google-authenticator..."
-apt-get -qq -y install makepasswd pwgen screen tmux htop unzip unrar glances emacs wget curl man mc landscape-common libpam-google-authenticator > /dev/null
+echo "Installing makepasswd pwgen screen htop unzip unrar glances emacs wget curl man mc landscape-common (libpam-google-authenticator)..."
+apt-get -qq -y install makepasswd pwgen screen tmux htop unzip unrar glances emacs wget curl man mc landscape-common > /dev/null
 
 # Version control
 echo "Installing collectd sensord smartmontools..."

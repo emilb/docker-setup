@@ -27,9 +27,9 @@ counter=0
 for subdomain in "\${tokens[@]}"
 do
     echo "registering \$subdomain.\$INTERNAL_DOMAIN"
-    sequence=`printf "%03d\n" \$counter`
+    sequence=\`printf "%03d\n" \$counter\`
 
-    data=`echo "{\"Name\":\"\$subdomain\",\"Environment\":\"internal\",\"Port\":80,\"host\":\"\$nginxproxyip\",\"TTL\":900}"`
+    data=\`echo "{\"Name\":\"\$subdomain\",\"Environment\":\"internal\",\"Port\":80,\"host\":\"\$nginxproxyip\",\"TTL\":900}"\`
     curl -X PUT -L http://\$skydnsip:8080/skydns/services/4\$sequence -d \$data
     let counter=counter+1
 done
@@ -51,7 +51,7 @@ counter=0
 for subdomain in "\${tokens[@]}"
 do
     echo "registering \$subdomain.\$INTERNAL_DOMAIN"
-    sequence=`printf "%03d\n" \$counter`
+    sequence=\`printf "%03d\n" \$counter\`
 
     curl -X PATCH -L http://\$skydnsip:8080/skydns/services/4\$sequence -d '{"TTL":900}'
     let counter=counter+1

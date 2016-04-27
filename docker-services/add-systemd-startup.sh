@@ -30,6 +30,7 @@ PLEX_TRANSCODE_DIR="$docker_base_path_iscsi/transcode"
 COUCHPOTATO_CONFIG_DIR="$docker_base_path/couchpotato/config"
 SONARR_CONFIG_DIR="$docker_base_path/sonarr/config"
 NZBGET_CONFIG_DIR="$docker_base_path/nzbget/config"
+DELUGE_CONFIG_DIR="$docker_base_path/deluge/config"
 DOWNLOADS_DIR="$downloads_path"
 OVPN_DATA="$openvpn_data_name"
 DOMAIN="$domain"
@@ -279,7 +280,7 @@ ExecStartPre=-/usr/bin/docker rm couchpotato
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=5050 \
-	-e VIRTUAL_HOST=movies.$domain,movies.$internal_domain \
+	-e VIRTUAL_HOST=couchpotato.$domain,couchpotato.$internal_domain \
 	-v /etc/localtime:/etc/localtime:ro \
 	-v \${COUCHPOTATO_CONFIG_DIR}:/config \
 	-v \${DOWNLOADS_DIR}:/downloads \
@@ -312,7 +313,7 @@ ExecStartPre=-/usr/bin/docker rm sonarr
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=8989 \
-	-e VIRTUAL_HOST=tv.$domain,tv.$internal_domain \
+	-e VIRTUAL_HOST=sonarr.$domain,sonarr.$internal_domain \
 	-v /dev/rtc:/dev/rtc:ro \
 	-v \${SONARR_CONFIG_DIR}:/config \
 	-v \${DOWNLOADS_DIR}:/downloads \
@@ -355,6 +356,39 @@ ExecStart=/usr/bin/docker run \
 	linuxserver/nzbget
 
 ExecStop=/usr/bin/docker stop nzbget
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+#**** deluge-docker.service ****
+cat << EOF > /etc/systemd/system/deluge-docker.service
+[Unit]
+Description=deluge container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+EnvironmentFile=$northpath_defaults
+
+ExecStartPre=-/usr/bin/docker kill deluge
+ExecStartPre=-/usr/bin/docker rm deluge
+
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	--net=host \
+	-e VIRTUAL_PORT=8112 \
+	-e VIRTUAL_HOST=deluge.$domain,deluge.$internal_domain \
+	-v /etc/localtime:/etc/localtime:ro \
+	-v \${DELUGE_CONFIG_DIR}:/config \
+	-v \${DOWNLOADS_DIR}:/downloads \
+	-e PGID=$guid \
+	-e PUID=$uid \
+	--name=deluge \
+	linuxserver/deluge
+
+ExecStop=/usr/bin/docker stop deluge
 
 [Install]
 WantedBy=multi-user.target
