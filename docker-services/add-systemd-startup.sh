@@ -25,12 +25,14 @@ GRAFANA_DATA_DIR="$docker_base_path/grafana"
 MYSQL_DATA_DIR="$docker_base_path/mysql"
 MOVIES_DIR="$movies_path"
 TV_DIR="$tv_path"
+COMICS_DIR="$comics_path"
 PLEX_CONFIG_DIR="$docker_base_path/plex/config"
 PLEX_TRANSCODE_DIR="$docker_base_path_iscsi/transcode"
 COUCHPOTATO_CONFIG_DIR="$docker_base_path/couchpotato/config"
 SONARR_CONFIG_DIR="$docker_base_path/sonarr/config"
 NZBGET_CONFIG_DIR="$docker_base_path/nzbget/config"
 DELUGE_CONFIG_DIR="$docker_base_path/deluge/config"
+MYLAR_CONFIG_DIR="$docker_base_path/mylar/config"
 DOWNLOADS_DIR="$downloads_path"
 OVPN_DATA="$openvpn_data_name"
 DOMAIN="$domain"
@@ -356,6 +358,44 @@ ExecStart=/usr/bin/docker run \
 	linuxserver/nzbget
 
 ExecStop=/usr/bin/docker stop nzbget
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+#**** mylar-docker.service ****
+cat << EOF > /etc/systemd/system/mylar-docker.service
+[Unit]
+Description=mylar container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+EnvironmentFile=$northpath_defaults
+
+ExecStartPre=-/usr/bin/docker kill deluge
+ExecStartPre=-/usr/bin/docker rm deluge
+
+ExecStart=/usr/bin/docker run \
+	$log_config \
+	-e VIRTUAL_PORT=8090 \
+	-e VIRTUAL_HOST=mylar.$domain,mylar.$internal_domain \
+	-v /etc/localtime:/etc/localtime:ro \
+	-v \${MYLAR_CONFIG_DIR}:/config \
+	-v \${DOWNLOADS_DIR}:/downloads \
+	-v \${COMICS_DIR}:/comics \
+	-e PGID=$guid \
+	-e PUID=$uid \
+	--name=mylar \
+	linuxserver/mylar
+
+docker create --name=mylar -v /etc/localtime:/etc/localtime:ro \
+-v <path to data>:/config -v <downloads-folder>:/downloads \
+-v <comics-folder>:/comics -e PGID=<gid> -e PUID=<uid>  \
+-p 8090:8090 linuxserver/mylar
+
+ExecStop=/usr/bin/docker stop mylar
 
 [Install]
 WantedBy=multi-user.target
