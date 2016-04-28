@@ -28,6 +28,7 @@ first_dhcp_line=`docker run --volumes-from openvpn_data --rm busybox sh -c "grep
 docker run --volumes-from openvpn_data --rm busybox sh -c 'sed -i "$first_dhcp_line i push dhcp-option DNS $docker_ip" /etc/openvpn/openvpn.conf'
 
 # Generate client cert
+rm -rf ~/certs
 mkdir ~/certs
 tokens=($users)
 for user in "${tokens[@]}"
