@@ -41,8 +41,8 @@ docker-services/configure-openvpn.sh
 echo "Adding systemd for docker containers..."
 docker-services/add-systemd-startup.sh
 
-echo "Generating SSL keys..."
-docker-services/generate-ssl-keys.sh
+#echo "Generating SSL keys..."
+#docker-services/generate-ssl-keys.sh
 
 echo ""
 echo "All is done, rember to keep generated passwords safe!"

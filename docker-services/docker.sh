@@ -16,15 +16,15 @@ fi
 
 echo "Adding docker override setting for DNS"
 
-#mkdir -p /etc/systemd/system/docker.service.d > /dev/null
-#
-#cat << EOF > /etc/systemd/system/docker.service.d/override.conf
-#[Service]
-#EnvironmentFile=
-#EnvironmentFile=-/etc/default/docker
-#ExecStart=
-#ExecStart=/usr/bin/docker -d \$DOCKER_OPTS -H fd://
-#EOF
+mkdir -p /etc/systemd/system/docker.service.d > /dev/null
+
+cat << EOF > /etc/systemd/system/docker.service.d/override.conf
+[Service]
+EnvironmentFile=
+EnvironmentFile=-/etc/default/docker
+ExecStart=
+ExecStart=/usr/bin/docker daemon \$DOCKER_OPTS -H fd://
+EOF
 
 cat << EOF > /etc/default/docker
 # Docker Upstart and SysVinit configuration file

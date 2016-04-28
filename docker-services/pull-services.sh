@@ -10,7 +10,7 @@ docker pull linuxserver/plex
 docker pull linuxserver/nzbget
 docker pull linuxserver/couchpotato
 docker pull linuxserver/sonarr
-docker pull linuxserver/deluge
+docker pull linuxserver/transmission
 
 docker pull kylemanna/openvpn
 

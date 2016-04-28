@@ -31,7 +31,8 @@ PLEX_TRANSCODE_DIR="$docker_base_path_iscsi/transcode"
 COUCHPOTATO_CONFIG_DIR="$docker_base_path/couchpotato/config"
 SONARR_CONFIG_DIR="$docker_base_path/sonarr/config"
 NZBGET_CONFIG_DIR="$docker_base_path/nzbget/config"
-DELUGE_CONFIG_DIR="$docker_base_path/deluge/config"
+TRANSMISSION_CONFIG_DIR="$docker_base_path/transmission/config"
+TRANSMISSION_WATCH_DIR="$docker_base_path/transmission/watch"
 MYLAR_CONFIG_DIR="$docker_base_path/mylar/config"
 DOWNLOADS_DIR="$downloads_path"
 OVPN_DATA="$openvpn_data_name"
@@ -63,7 +64,7 @@ ExecStart=/usr/bin/docker run \
 	-p 12201:12201 \
 	-p 12201:12201/udp \
 	-e VIRTUAL_PORT=9000 \
-	-e VIRTUAL_HOST=graylog.$domain,graylog.$internal_domain \
+	-e VIRTUAL_HOST=graylog.$domain \
 	-e GRAYLOG_USERNAME=admin \
 	-e GRAYLOG_PASSWORD=$graylog \
 	-e GRAYLOG_TIMEZONE=Europe/Stockholm \
@@ -151,10 +152,12 @@ EnvironmentFile=$northpath_defaults
 ExecStartPre=-/usr/bin/docker kill nginx-proxy
 ExecStartPre=-/usr/bin/docker rm nginx-proxy
 
+# Use this to enable certs:
+# -v \${NGINX_CERTS_DIR}:/etc/nginx/certs \
+
 ExecStart=/usr/bin/docker run \
 	$log_config \
-	-p 443:443 \
-	-v \${NGINX_CERTS_DIR}:/etc/nginx/certs \
+	-p 80:80 \
 	-v /var/run/docker.sock:/tmp/docker.sock:ro \
 	--name nginx-proxy \
 	jwilder/nginx-proxy
@@ -184,7 +187,7 @@ ExecStart=/usr/bin/docker run \
 	-p 25826:25826/udp \
 	-p 8086:8086 \
 	-e VIRTUAL_PORT=8083 \
-	-e VIRTUAL_HOST=influxdb.$domain,influxdb.$internal_domain \
+	-e VIRTUAL_HOST=influxdb.$domain \
 	-e ADMIN_USER="root" \
 	-e INFLUXDB_INIT_PWD="$influx" \
 	-e PRE_CREATE_DB=collectdb \
@@ -217,7 +220,7 @@ ExecStartPre=-/usr/bin/docker rm grafana
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=3000 \
-	-e VIRTUAL_HOST=grafana.$domain,grafana.$internal_domain \
+	-e VIRTUAL_HOST=grafana.$domain \
 	-e GF_SERVER_ROOT_URL="https://grafana.$domain/" \
 	-e GF_SECURITY_ADMIN_PASSWORD="$grafana" \
 	-v \${GRAFANA_DATA_DIR}:/var/lib/grafana \
@@ -248,7 +251,7 @@ ExecStartPre=-/usr/bin/docker rm plex
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=32400 \
-	-e VIRTUAL_HOST=plex.$domain,plex.$internal_domain \
+	-e VIRTUAL_HOST=plex.$domain \
 	-e PGID=$guid \
 	-e PUID=$uid \
 	-e VERSION="plexpass" \
@@ -282,7 +285,7 @@ ExecStartPre=-/usr/bin/docker rm couchpotato
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=5050 \
-	-e VIRTUAL_HOST=couchpotato.$domain,couchpotato.$internal_domain \
+	-e VIRTUAL_HOST=couchpotato.$domain \
 	-v /etc/localtime:/etc/localtime:ro \
 	-v \${COUCHPOTATO_CONFIG_DIR}:/config \
 	-v \${DOWNLOADS_DIR}:/downloads \
@@ -315,7 +318,7 @@ ExecStartPre=-/usr/bin/docker rm sonarr
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=8989 \
-	-e VIRTUAL_HOST=sonarr.$domain,sonarr.$internal_domain \
+	-e VIRTUAL_HOST=sonarr.$domain \
 	-v /dev/rtc:/dev/rtc:ro \
 	-v \${SONARR_CONFIG_DIR}:/config \
 	-v \${DOWNLOADS_DIR}:/downloads \
@@ -348,7 +351,7 @@ ExecStartPre=-/usr/bin/docker rm nzbget
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=6789 \
-	-e VIRTUAL_HOST=nzbget.$domain,nzbget.$internal_domain \
+	-e VIRTUAL_HOST=nzbget.$domain \
 	-v /etc/localtime:/etc/localtime:ro \
 	-v \${NZBGET_CONFIG_DIR}:/config \
 	-v \${DOWNLOADS_DIR}:/downloads \
@@ -374,13 +377,13 @@ After=docker.service
 Restart=always
 EnvironmentFile=$northpath_defaults
 
-ExecStartPre=-/usr/bin/docker kill deluge
-ExecStartPre=-/usr/bin/docker rm deluge
+ExecStartPre=-/usr/bin/docker kill mylar
+ExecStartPre=-/usr/bin/docker rm mylar
 
 ExecStart=/usr/bin/docker run \
 	$log_config \
 	-e VIRTUAL_PORT=8090 \
-	-e VIRTUAL_HOST=mylar.$domain,mylar.$internal_domain \
+	-e VIRTUAL_HOST=mylar.$domain \
 	-v /etc/localtime:/etc/localtime:ro \
 	-v \${MYLAR_CONFIG_DIR}:/config \
 	-v \${DOWNLOADS_DIR}:/downloads \
@@ -390,11 +393,6 @@ ExecStart=/usr/bin/docker run \
 	--name=mylar \
 	linuxserver/mylar
 
-docker create --name=mylar -v /etc/localtime:/etc/localtime:ro \
--v <path to data>:/config -v <downloads-folder>:/downloads \
--v <comics-folder>:/comics -e PGID=<gid> -e PUID=<uid>  \
--p 8090:8090 linuxserver/mylar
-
 ExecStop=/usr/bin/docker stop mylar
 
 [Install]
@@ -402,9 +400,9 @@ WantedBy=multi-user.target
 EOF
 
 #**** deluge-docker.service ****
-cat << EOF > /etc/systemd/system/deluge-docker.service
+cat << EOF > /etc/systemd/system/transmission-docker.service
 [Unit]
-Description=deluge container
+Description=transmission container
 Requires=docker.service
 After=docker.service
 
@@ -412,23 +410,24 @@ After=docker.service
 Restart=always
 EnvironmentFile=$northpath_defaults
 
-ExecStartPre=-/usr/bin/docker kill deluge
-ExecStartPre=-/usr/bin/docker rm deluge
+ExecStartPre=-/usr/bin/docker kill transmission
+ExecStartPre=-/usr/bin/docker rm transmission
 
 ExecStart=/usr/bin/docker run \
 	$log_config \
-	--net=host \
-	-e VIRTUAL_PORT=8112 \
-	-e VIRTUAL_HOST=deluge.$domain,deluge.$internal_domain \
+	-e VIRTUAL_PORT=9091 \
+	-e VIRTUAL_HOST=transmission.$domain \
 	-v /etc/localtime:/etc/localtime:ro \
-	-v \${DELUGE_CONFIG_DIR}:/config \
+	-v \${TRANSMISSION_CONFIG_DIR}:/config \
+	-v \${TRANSMISSION_WATCH_DIR}:/watch \
 	-v \${DOWNLOADS_DIR}:/downloads \
 	-e PGID=$guid \
 	-e PUID=$uid \
-	--name=deluge \
-	linuxserver/deluge
+	-p 9091:9091 -p 51413:51413 \
+	--name=transmission \
+	linuxserver/transmission
 
-ExecStop=/usr/bin/docker stop deluge
+ExecStop=/usr/bin/docker stop transmission
 
 [Install]
 WantedBy=multi-user.target
@@ -513,16 +512,18 @@ EnvironmentFile=$northpath_defaults
 ExecStart=/opt/scripts/re-register-dns.sh $northpath_defaults
 EOF
 
-systemctl enable graylog-docker.service
+#systemctl enable graylog-docker.service
 systemctl enable skydns-docker.service
 systemctl enable skydock-docker.service
 systemctl enable nginx-proxy-docker.service
-systemctl enable influxdb-docker.service
-systemctl enable grafana-docker.service
+#systemctl enable influxdb-docker.service
+#systemctl enable grafana-docker.service
 systemctl enable plex-docker.service
 systemctl enable couchpotato-docker.service
 systemctl enable sonarr-docker.service
 systemctl enable nzbget-docker.service
+systemctl enable mylar-docker.service
+systemctl enable transmission-docker.service
 systemctl enable openvpn-docker.service
 
 systemctl enable register-dns.timer
